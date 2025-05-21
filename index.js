@@ -1,8 +1,5 @@
 // Projekt: Intranet-Kochbuch Backend (Express + MariaDB)
 
-// ===========================
-// index.js
-// ===========================
 const express = require('express')
 const cors = require('cors')
 const dotenv = require('dotenv')
@@ -11,18 +8,15 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const auth = require('./middleware/auth')
 
-// Load env vars
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 5000
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey'
 
-// Middlewares
 app.use(cors())
 app.use(express.json())
 
-// Initialisiere Datenbank und Tabellen
 async function initDatabase() {
   try {
     const connection = await mysql.createConnection({
@@ -34,7 +28,6 @@ async function initDatabase() {
 
     console.log('✅ Verbindung zur MariaDB erfolgreich.')
 
-    // Tabelle: user
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS user (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -45,7 +38,6 @@ async function initDatabase() {
       )
     `)
 
-    // Tabelle: recipe
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS recipe (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -60,7 +52,7 @@ async function initDatabase() {
       )
     `)
 
-    console.log('📦 Tabellen wurden geprüft oder erstellt.')
+    console.log('Tabellen wurden geprüft oder erstellt.')
     await connection.end()
   } catch (error) {
     console.error('❌ Fehler bei der DB-Initialisierung:', error.message)
@@ -69,17 +61,14 @@ async function initDatabase() {
 
 initDatabase()
 
-// Test Route
 app.get('/', (req, res) => {
   res.send('API läuft: Intranet-Kochbuch Backend')
 })
 
-// Geschützte Route (Test)
 app.get('/api/protected', auth, (req, res) => {
   res.json({ message: 'Erfolgreich authentifiziert!', user: req.user })
 })
 
-// Registrierung
 app.post('/api/register', async (req, res) => {
   const { email, password, display_name } = req.body
 
@@ -115,7 +104,6 @@ app.post('/api/register', async (req, res) => {
   }
 })
 
-// Login
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body
 
@@ -151,7 +139,7 @@ app.post('/api/login', async (req, res) => {
       JWT_SECRET,
       { expiresIn: '2h' }
     )
-    console.log("🔐 Token erstellt:", token)
+    console.log("Token erstellt:", token)
 
     await connection.end()
     res.status(200).json({
@@ -203,7 +191,32 @@ app.post('/api/recipes', auth, async (req, res) => {
   }
 })
 
+// Rezepte des eingeloggten Benutzers abrufen (geschützt)
+app.get('/api/recipes', auth, async (req, res) => {
+  const userId = req.user.id
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    })
+
+    const [recipes] = await connection.execute(
+      'SELECT id, title, ingredients, instructions, image_url, is_published, created_at FROM recipe WHERE user_id = ?',
+      [userId]
+    )
+
+    await connection.end()
+    res.status(200).json({ recipes })
+  } catch (err) {
+    console.error('❌ Fehler beim Abrufen der Rezepte:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
+
 // Server Start
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server läuft auf http://0.0.0.0:${PORT}`)
+  console.log(`Server läuft auf http://0.0.0.0:${PORT}`)
 })
