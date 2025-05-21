@@ -3,6 +3,11 @@
 const jwt = require('jsonwebtoken')
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey'
 
+/**
+ * Middleware zur Verifizierung des JWT-Tokens
+ * Erwartet: Authorization: Bearer <token>
+ * Fügt bei Erfolg req.user = { id, email } hinzu
+ */
 function auth(req, res, next) {
   const authHeader = req.headers.authorization
 
