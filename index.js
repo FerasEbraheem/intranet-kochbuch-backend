@@ -191,7 +191,7 @@ app.post('/api/recipes', auth, async (req, res) => {
   }
 })
 
-// Rezepte des eingeloggten Benutzers abrufen (geschützt)
+// Rezepte abrufen (geschützt)
 app.get('/api/recipes', auth, async (req, res) => {
   const userId = req.user.id
 
@@ -212,6 +212,44 @@ app.get('/api/recipes', auth, async (req, res) => {
     res.status(200).json({ recipes })
   } catch (err) {
     console.error('❌ Fehler beim Abrufen der Rezepte:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
+
+// Rezept aktualisieren (geschützt)
+app.put('/api/recipes/:id', auth, async (req, res) => {
+  const { title, ingredients, instructions, image_url } = req.body
+  const recipeId = req.params.id
+  const userId = req.user.id
+
+  if (!title || !ingredients || !instructions) {
+    return res.status(400).json({ error: 'Alle Felder außer Bild sind erforderlich.' })
+  }
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    })
+
+    const [result] = await connection.execute(
+      `UPDATE recipe
+       SET title = ?, ingredients = ?, instructions = ?, image_url = ?
+       WHERE id = ? AND user_id = ?`,
+      [title, ingredients, instructions, image_url || null, recipeId, userId]
+    )
+
+    await connection.end()
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Rezept nicht gefunden oder keine Berechtigung.' })
+    }
+
+    res.status(200).json({ message: 'Rezept erfolgreich aktualisiert.' })
+  } catch (err) {
+    console.error('❌ Fehler beim Aktualisieren des Rezepts:', err.message)
     res.status(500).json({ error: 'Interner Serverfehler.' })
   }
 })
