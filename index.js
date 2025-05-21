@@ -60,7 +60,7 @@ async function initDatabase() {
       )
     `)
 
-    console.log('Tabellen wurden geprüft oder erstellt.')
+    console.log('📦 Tabellen wurden geprüft oder erstellt.')
     await connection.end()
   } catch (error) {
     console.error('❌ Fehler bei der DB-Initialisierung:', error.message)
@@ -151,7 +151,7 @@ app.post('/api/login', async (req, res) => {
       JWT_SECRET,
       { expiresIn: '2h' }
     )
-    console.log("Token erstellt:", token)
+    console.log("🔐 Token erstellt:", token)
 
     await connection.end()
     res.status(200).json({
@@ -169,7 +169,41 @@ app.post('/api/login', async (req, res) => {
   }
 })
 
+// Rezept hinzufügen (geschützt)
+app.post('/api/recipes', auth, async (req, res) => {
+  const { title, ingredients, instructions, image_url } = req.body
+  const userId = req.user.id
+
+  if (!title || !ingredients || !instructions) {
+    return res.status(400).json({ error: 'Titel, Zutaten und Anleitung sind erforderlich.' })
+  }
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    })
+
+    const [result] = await connection.execute(
+      `INSERT INTO recipe (user_id, title, ingredients, instructions, image_url)
+       VALUES (?, ?, ?, ?, ?)`,
+      [userId, title, ingredients, instructions, image_url || null]
+    )
+
+    await connection.end()
+    res.status(201).json({
+      message: 'Rezept erfolgreich gespeichert.',
+      recipeId: result.insertId
+    })
+  } catch (err) {
+    console.error('❌ Fehler beim Speichern des Rezepts:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
+
 // Server Start
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server läuft auf http://0.0.0.0:${PORT}`)
+  console.log(`🚀 Server läuft auf http://0.0.0.0:${PORT}`)
 })
