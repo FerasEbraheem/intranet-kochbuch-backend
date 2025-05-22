@@ -109,13 +109,36 @@ app.post('/api/register', async (req, res) => {
       [email, hashedPassword, display_name || null]
     )
 
+    // Benutzer erneut abrufen, um ID zu bekommen
+    const [userResult] = await connection.execute(
+      'SELECT * FROM user WHERE email = ?',
+      [email]
+    )
+    const user = userResult[0]
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: '2h' }
+    )
+
     await connection.end()
-    res.status(201).json({ message: 'Registrierung erfolgreich.' })
+
+    res.status(201).json({
+      message: 'Registrierung erfolgreich.',
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        display_name: user.display_name
+      }
+    })
   } catch (err) {
     console.error('❌ Fehler bei Registrierung:', err.message)
     res.status(500).json({ error: 'Interner Serverfehler.' })
   }
 })
+
 
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body
