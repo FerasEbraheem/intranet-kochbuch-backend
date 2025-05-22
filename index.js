@@ -14,7 +14,13 @@ const app = express()
 const PORT = process.env.PORT || 5000
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey'
 
-app.use(cors())
+const corsOptions = {
+  origin: 'http://192.168.1.35:5173',
+  credentials: true,
+}
+
+app.use(cors(corsOptions))
+
 app.use(express.json())
 
 async function initDatabase() {
