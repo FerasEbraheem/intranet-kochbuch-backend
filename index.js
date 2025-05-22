@@ -15,9 +15,16 @@ const PORT = process.env.PORT || 5000
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey'
 
 const corsOptions = {
-  origin: 'http://192.168.1.35:5173',
+  origin: (origin, callback) => {
+    if (!origin || origin.startsWith('http://192.168.1.35')) {
+      callback(null, true)
+    } else {
+      callback(new Error('Nicht erlaubter Ursprung'))
+    }
+  },
   credentials: true,
 }
+
 
 app.use(cors(corsOptions))
 
