@@ -320,6 +320,60 @@ app.delete('/api/recipes/:id', auth, async (req, res) => {
     res.status(500).json({ error: 'Interner Serverfehler.' })
   }
 })
+// Öffentliche (veröffentlichte) Rezepte abrufen – keine Authentifizierung nötig
+app.get('/api/public-recipes', async (req, res) => {
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    })
+
+    const [recipes] = await connection.execute(
+      'SELECT id, title, ingredients, instructions, image_url FROM recipe WHERE is_published = TRUE ORDER BY created_at DESC'
+    )
+
+    await connection.end()
+    res.status(200).json({ recipes })
+  } catch (err) {
+    console.error('❌ Fehler beim Laden der öffentlichen Rezepte:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
+
+// Rezept veröffentlichen (geschützt)
+app.put('/api/recipes/:id/publish', auth, async (req, res) => {
+  const recipeId = req.params.id
+  const userId = req.user.id
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    })
+
+    const [result] = await connection.execute(
+      'UPDATE recipe SET is_published = true WHERE id = ? AND user_id = ?',
+      [recipeId, userId]
+    )
+
+    await connection.end()
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Rezept nicht gefunden oder keine Berechtigung.' })
+    }
+
+    res.status(200).json({ message: 'Rezept veröffentlicht.' })
+  } catch (err) {
+    console.error('❌ Fehler beim Veröffentlichen:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
+
+
 // Server Start
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server läuft auf http://0.0.0.0:${PORT}`)
