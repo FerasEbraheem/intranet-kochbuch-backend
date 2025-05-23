@@ -330,9 +330,14 @@ app.get('/api/public-recipes', async (req, res) => {
       database: process.env.DB_NAME
     })
 
-    const [recipes] = await connection.execute(
-    'SELECT id, user_id, title, ingredients, instructions, image_url FROM recipe WHERE is_published = TRUE ORDER BY created_at DESC'
-    )
+    const [recipes] = await connection.execute(`
+      SELECT r.id, r.title, r.ingredients, r.instructions, r.image_url, r.user_id,
+             u.display_name, u.email
+      FROM recipe r
+      JOIN user u ON r.user_id = u.id
+      WHERE r.is_published = TRUE
+      ORDER BY r.created_at DESC
+    `)
 
     await connection.end()
     res.status(200).json({ recipes })
@@ -341,6 +346,7 @@ app.get('/api/public-recipes', async (req, res) => {
     res.status(500).json({ error: 'Interner Serverfehler.' })
   }
 })
+
 
 // Rezept veröffentlichen (geschützt)
 app.put('/api/recipes/:id/publish', auth, async (req, res) => {
