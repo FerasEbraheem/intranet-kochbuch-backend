@@ -331,7 +331,7 @@ app.get('/api/public-recipes', async (req, res) => {
     })
 
     const [recipes] = await connection.execute(
-      'SELECT id, title, ingredients, instructions, image_url FROM recipe WHERE is_published = TRUE ORDER BY created_at DESC'
+    'SELECT id, user_id, title, ingredients, instructions, image_url FROM recipe WHERE is_published = TRUE ORDER BY created_at DESC'
     )
 
     await connection.end()
