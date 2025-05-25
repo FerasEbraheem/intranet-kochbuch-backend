@@ -521,6 +521,67 @@ app.delete('/api/favorites/:recipeId', auth, async (req, res) => {
   }
 });
 
+// Kommentar hinzufügen
+app.post('/api/comments/:recipeId', auth, async (req, res) => {
+  const recipeId = req.params.recipeId
+  const userId = req.user.id
+  const { text } = req.body
+
+  if (!text || text.trim() === '') {
+    return res.status(400).json({ error: 'Kommentar darf nicht leer sein.' })
+  }
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    })
+
+    await connection.execute(
+      `INSERT INTO comment (recipe_id, user_id, content)
+      VALUES (?, ?, ?)`,
+      [recipeId, userId, text]
+    )
+
+
+    await connection.end()
+    res.status(201).json({ message: 'Kommentar gespeichert.' })
+  } catch (err) {
+    console.error('❌ Fehler beim Speichern des Kommentars:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
+
+
+app.get('/api/comments/:recipeId', async (req, res) => {
+  const recipeId = req.params.recipeId
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    })
+
+    const [comments] = await connection.execute(`
+      SELECT c.content AS text, u.display_name, u.email
+      FROM comment c
+      JOIN user u ON c.user_id = u.id
+      WHERE c.recipe_id = ?
+      ORDER BY c.created_at ASC
+    `, [recipeId])
+
+    await connection.end()
+    res.status(200).json({ comments })
+  } catch (err) {
+    console.error('❌ Fehler beim Laden der Kommentare:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
+
 
 
 
