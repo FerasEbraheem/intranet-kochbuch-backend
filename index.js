@@ -383,11 +383,11 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
 
-// التأكد من وجود مجلد الصور
+// Überprüfung, ob der Bilderordner vorhanden ist
 const uploadDir = path.join(__dirname, 'uploads')
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir)
 
-// إعداد التخزين
+// Storage setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads'),
   filename: (req, file, cb) => {
@@ -398,13 +398,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage })
 
-// مسار رفع الصورة
+// Image upload route
 app.post('/api/upload-image', upload.single('image'), (req, res) => {
   const fileUrl = `http://192.168.1.35:5000/uploads/${req.file.filename}`
   res.json({ imageUrl: fileUrl })
 })
 
-// تقديم الصور بشكل ثابت
+// Serve images statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 
