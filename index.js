@@ -496,6 +496,32 @@ app.get('/api/favorites', auth, async (req, res) => {
   }
 });
 
+app.delete('/api/favorites/:recipeId', auth, async (req, res) => {
+  const userId = req.user.id;
+  const recipeId = req.params.recipeId;
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    });
+
+    const [result] = await connection.execute(
+      'DELETE FROM favorite WHERE user_id = ? AND recipe_id = ?',
+      [userId, recipeId]
+    );
+
+    await connection.end();
+    res.status(200).json({ message: 'Rezept wurde aus Favoriten entfernt.' });
+  } catch (err) {
+    console.error('❌ Fehler beim Entfernen aus Favoriten:', err.message);
+    res.status(500).json({ error: 'Interner Serverfehler.' });
+  }
+});
+
+
 
 
 
