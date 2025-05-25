@@ -443,6 +443,59 @@ app.get('/api/public-recipes/:id', async (req, res) => {
   }
 })
 
+app.post('/api/favorites/:recipeId', auth, async (req, res) => {
+  const userId = req.user.id;
+  const recipeId = req.params.recipeId;
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    });
+
+    await connection.execute(
+      'INSERT IGNORE INTO favorite (user_id, recipe_id) VALUES (?, ?)',
+      [userId, recipeId]
+    );
+
+    await connection.end();
+    res.status(200).json({ message: 'Zur Favoritenliste hinzugefügt.' });
+  } catch (err) {
+    console.error('❌ Fehler beim Hinzufügen zur Favoritenliste:', err.message);
+    res.status(500).json({ error: 'Interner Serverfehler.' });
+  }
+});
+
+
+app.get('/api/favorites', auth, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    });
+
+    const [favorites] = await connection.execute(`
+      SELECT r.id, r.title, r.ingredients, r.instructions, r.image_url, u.display_name, u.email
+      FROM favorite f
+      JOIN recipe r ON f.recipe_id = r.id
+      JOIN user u ON r.user_id = u.id
+      WHERE f.user_id = ?
+    `, [userId]);
+
+    await connection.end();
+    res.status(200).json({ recipes: favorites });
+  } catch (err) {
+    console.error('❌ Fehler beim Laden der Favoriten:', err.message);
+    res.status(500).json({ error: 'Interner Serverfehler.' });
+  }
+});
+
 
 
 
