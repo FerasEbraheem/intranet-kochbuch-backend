@@ -567,17 +567,50 @@ app.get('/api/comments/:recipeId', async (req, res) => {
     })
 
     const [comments] = await connection.execute(`
-      SELECT c.content AS text, u.display_name, u.email
+      SELECT c.id, c.user_id, c.content AS text, u.display_name, u.email
       FROM comment c
       JOIN user u ON c.user_id = u.id
       WHERE c.recipe_id = ?
       ORDER BY c.created_at ASC
     `, [recipeId])
 
+
     await connection.end()
     res.status(200).json({ comments })
   } catch (err) {
     console.error('❌ Fehler beim Laden der Kommentare:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
+
+
+// Kommentar löschen (nur vom Besitzer)
+app.delete('/api/comments/:commentId', auth, async (req, res) => {
+  const commentId = req.params.commentId
+  const userId = req.user.id
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    })
+
+    const [result] = await connection.execute(
+      'DELETE FROM comment WHERE id = ? AND user_id = ?',
+      [commentId, userId]
+    )
+
+    await connection.end()
+
+    if (result.affectedRows === 0) {
+      return res.status(403).json({ error: 'Keine Berechtigung zum Löschen dieses Kommentars.' })
+    }
+
+    res.status(200).json({ message: 'Kommentar gelöscht.' })
+  } catch (err) {
+    console.error('❌ Fehler beim Löschen des Kommentars:', err.message)
     res.status(500).json({ error: 'Interner Serverfehler.' })
   }
 })
