@@ -409,6 +409,43 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 
 
+
+// Einzelnes öffentliches Rezept abrufen
+app.get('/api/public-recipes/:id', async (req, res) => {
+  const recipeId = req.params.id
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    })
+
+    const [rows] = await connection.execute(`
+      SELECT r.id, r.title, r.ingredients, r.instructions, r.image_url, r.user_id,
+             u.display_name, u.email
+      FROM recipe r
+      JOIN user u ON r.user_id = u.id
+      WHERE r.is_published = TRUE AND r.id = ?
+    `, [recipeId])
+
+    await connection.end()
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Rezept nicht gefunden.' })
+    }
+
+    res.status(200).json({ recipe: rows[0] })
+  } catch (err) {
+    console.error('❌ Fehler beim Laden des Rezepts:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
+
+
+
+
 // Server Start
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server läuft auf http://0.0.0.0:${PORT}`)
