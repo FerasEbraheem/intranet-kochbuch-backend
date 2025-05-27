@@ -40,3 +40,6 @@ CREATE TABLE IF NOT EXISTS comment (
   FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,  -- Löschen bei Benutzerlöschung
   FOREIGN KEY (recipe_id) REFERENCES recipe(id) ON DELETE CASCADE -- Löschen bei Rezeptlöschung
 );
+
+
+ALTER TABLE user ADD COLUMN avatar_url VARCHAR(500); -- Optionaler Link zum Avatar-Bild des Benutzers
