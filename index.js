@@ -10,6 +10,14 @@ const auth = require('./middleware/auth')
 
 dotenv.config()
 
+const dbConfig = {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME
+}
+
+
 const app = express()
 const PORT = process.env.PORT || 5000
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey'
@@ -615,6 +623,58 @@ app.delete('/api/comments/:commentId', auth, async (req, res) => {
   }
 })
 
+
+// GET Profil
+app.get('/api/profile', auth, async (req, res) => {
+  const userId = req.user.id
+
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME
+    })
+
+    const [rows] = await connection.execute(
+      'SELECT id, email, display_name, avatar_url FROM user WHERE id = ?',
+      [userId]
+    )
+
+    await connection.end()
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Benutzer nicht gefunden.' })
+    }
+
+    const user = rows[0]
+
+    res.status(200).json({ user }) 
+  } catch (err) {
+    console.error('❌ Fehler beim Laden des Profils:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
+
+
+// PUT Profil aktualisieren
+app.put('/api/profile', auth, async (req, res) => {
+  const userId = req.user.id
+  const { display_name, avatar_url } = req.body
+
+  try {
+    const connection = await mysql.createConnection(dbConfig)
+    await connection.execute(
+      'UPDATE user SET display_name = ?, avatar_url = ? WHERE id = ?',
+      [display_name, avatar_url || null, userId]
+    )
+    await connection.end()
+    res.status(200).json({ message: 'Profil aktualisiert.' })
+  } catch (err) {
+    console.error('❌ Fehler beim Aktualisieren des Profils:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
 
 
 
