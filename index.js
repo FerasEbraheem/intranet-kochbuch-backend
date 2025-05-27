@@ -1,12 +1,15 @@
 // Projekt: Intranet-Kochbuch Backend (Express + MariaDB)
 
-const express = require('express')
-const cors = require('cors')
-const dotenv = require('dotenv')
-const mysql = require('mysql2/promise')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-const auth = require('./middleware/auth')
+import express from 'express'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import mysql from 'mysql2/promise'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import auth from './middleware/auth.js'
+import multer from 'multer'
+import path from 'path'
+import fs from 'fs'
 
 dotenv.config()
 
@@ -387,9 +390,9 @@ app.put('/api/recipes/:id/publish', auth, async (req, res) => {
   }
 })
 
-const multer = require('multer')
-const path = require('path')
-const fs = require('fs')
+import { fileURLToPath } from 'url'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Überprüfung, ob der Bilderordner vorhanden ist
 const uploadDir = path.join(__dirname, 'uploads')
