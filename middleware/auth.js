@@ -1,18 +1,17 @@
 // middleware/auth.js
+import jwt from 'jsonwebtoken'
 
-const jwt = require('jsonwebtoken')
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey'
 
 /**
- * Middleware zur Verifizierung des JWT-Tokens
- * Erwartet: Authorization: Bearer <token>
- * Fügt bei Erfolg req.user = { id, email } hinzu
+ * Middleware for verifying JWT tokens.
+ * Expected header: Authorization: Bearer <token>
  */
-function auth(req, res, next) {
+const auth = (req, res, next) => {
   const authHeader = req.headers.authorization
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Kein Token vorhanden.' })
+    return res.status(401).json({ error: 'No token provided.' })
   }
 
   const token = authHeader.split(' ')[1]
@@ -22,9 +21,9 @@ function auth(req, res, next) {
     req.user = decoded
     next()
   } catch (err) {
-    console.error('JWT Fehler:', err.message)
-    return res.status(403).json({ error: 'Ungültiger Token.' })
+    console.error('JWT Error:', err.message)
+    return res.status(403).json({ error: 'Invalid token.' })
   }
 }
 
-module.exports = auth
+export default auth
