@@ -11,9 +11,9 @@ import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
 
-dotenv.config()
+dotenv.config() // Diese Zeile liest die Datei .env und lädt die Umgebungsvariablen in process.env
 
-const dbConfig = {
+const dbConfig = { //Konfiguration der Datenbankverbindung
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
@@ -21,11 +21,11 @@ const dbConfig = {
 }
 
 
-const app = express()
-const PORT = process.env.PORT || 5000
-const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey'
+const app = express() // Initialisiert eine Express-Anwendung
+const PORT = process.env.PORT || 5000 // Legt den Port fest, auf dem der Server läuft (aus .env oder Standard: 5000)
+const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey' // Geheimschlüssel für JWT (aus .env oder Standardwert)
 
-const corsOptions = {
+const corsOptions = { //Erlaubt dem Frontend, nur aus demselben Netzwerk mit dem Backend zu kommunizieren
   origin: (origin, callback) => {
     if (!origin || origin.startsWith('http://192.168.1.35')) {
       callback(null, true)
@@ -37,11 +37,10 @@ const corsOptions = {
 }
 
 
-app.use(cors(corsOptions))
-
+app.use(cors(corsOptions)) // Aktiviert das Parsen von JSON-Daten und erlaubt CORS-Anfragen
 app.use(express.json())
 
-async function initDatabase() {
+async function initDatabase() { //Prüft, ob die Tabellen user und recipe existieren, und erstellt sie, falls sie nicht vorhanden sind
   try {
     const connection = await mysql.createConnection({
       host: process.env.DB_HOST,
@@ -85,14 +84,15 @@ async function initDatabase() {
 
 initDatabase()
 
-app.get('/', (req, res) => {
+app.get('/', (req, res) => { //Die Haupt-Testseite unter http://localhost:5000/ zeigt eine einfache Nachricht an.
   res.send('API läuft: Intranet-Kochbuch Backend')
 })
 
-app.get('/api/protected', auth, (req, res) => {
+app.get('/api/protected', auth, (req, res) => { //Verwendet das Middleware auth, um das JWT zu überprüfen.
   res.json({ message: 'Erfolgreich authentifiziert!', user: req.user })
 })
 
+// Registrierung eines neuen Benutzers
 app.post('/api/register', async (req, res) => {
   const { email, password, display_name } = req.body
 
@@ -101,7 +101,7 @@ app.post('/api/register', async (req, res) => {
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const hashedPassword = await bcrypt.hash(password, 10)// Hashing des Passworts mit bcrypt
     const connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
@@ -109,13 +109,13 @@ app.post('/api/register', async (req, res) => {
       database: process.env.DB_NAME,
     })
 
-    const [existing] = await connection.execute('SELECT id FROM user WHERE email = ?', [email])
+    const [existing] = await connection.execute('SELECT id FROM user WHERE email = ?', [email])// Überprüfen, ob die E-Mail bereits registriert ist
     if (existing.length > 0) {
       await connection.end()
       return res.status(409).json({ error: 'E-Mail ist bereits registriert.' })
     }
 
-    await connection.execute(
+    await connection.execute( // Einfügen des neuen Benutzers in die Datenbank
       'INSERT INTO user (email, password, display_name) VALUES (?, ?, ?)',
       [email, hashedPassword, display_name || null]
     )
@@ -127,15 +127,15 @@ app.post('/api/register', async (req, res) => {
     )
     const user = userResult[0]
 
-    const token = jwt.sign(
+    const token = jwt.sign( // Erstellen eines JWT-Tokens für den neuen Benutzer
       { id: user.id, email: user.email },
       JWT_SECRET,
       { expiresIn: '2h' }
     )
 
-    await connection.end()
+    await connection.end() // Schließen der Datenbankverbindung
 
-    res.status(201).json({
+    res.status(201).json({// Erfolgreiche Registrierung
       message: 'Registrierung erfolgreich.',
       token,
       user: {
@@ -146,12 +146,12 @@ app.post('/api/register', async (req, res) => {
     })
   } catch (err) {
     console.error('❌ Fehler bei Registrierung:', err.message)
-    res.status(500).json({ error: 'Interner Serverfehler.' })
+    res.status(500).json({ error: 'Interner Serverfehler.' })// Fehlerbehandlung 500
   }
 })
 
-
-app.post('/api/login', async (req, res) => {
+// Login eines Benutzers
+app.post('/api/login', async (req, res) => {// Verwendet bcrypt, um das Passwort zu überprüfen
   const { email, password } = req.body
 
   if (!email || !password) {
@@ -679,6 +679,31 @@ app.put('/api/profile', auth, async (req, res) => {
   }
 })
 
+// Rezept zurückziehen (nicht mehr veröffentlichen)
+app.put('/api/recipes/:id/unpublish', auth, async (req, res) => {
+  const recipeId = req.params.id
+  const userId = req.user.id
+
+  try {
+    const connection = await mysql.createConnection(dbConfig)
+
+    const [result] = await connection.execute(
+      'UPDATE recipe SET is_published = false WHERE id = ? AND user_id = ?',
+      [recipeId, userId]
+    )
+
+    await connection.end()
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Rezept nicht gefunden oder keine Berechtigung.' })
+    }
+
+    res.status(200).json({ message: 'Rezept wurde zurückgezogen.' })
+  } catch (err) {
+    console.error('❌ Fehler beim Zurückziehen:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
 
 
 
