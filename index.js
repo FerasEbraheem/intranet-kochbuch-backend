@@ -73,7 +73,25 @@ async function initDatabase() { //Prüft, ob die Tabellen user und recipe existi
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
       )
+
     `)
+    await connection.execute(`
+    CREATE TABLE IF NOT EXISTS category (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(100) NOT NULL UNIQUE
+    )
+  `);
+
+    await connection.execute(`
+    CREATE TABLE IF NOT EXISTS recipe_category (
+      recipe_id INT NOT NULL,
+      category_id INT NOT NULL,
+      PRIMARY KEY (recipe_id, category_id),
+      FOREIGN KEY (recipe_id) REFERENCES recipe(id) ON DELETE CASCADE,
+      FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE CASCADE
+    )
+  `);
+
 
     console.log('Tabellen wurden geprüft oder erstellt.')
     await connection.end()
@@ -206,7 +224,7 @@ app.post('/api/login', async (req, res) => {// Verwendet bcrypt, um das Passwort
 
 // Rezept hinzufügen (geschützt)
 app.post('/api/recipes', auth, async (req, res) => {
-  const { title, ingredients, instructions, image_url } = req.body
+  const { title, ingredients, instructions, image_url, categoryIds } = req.body
   const userId = req.user.id
 
   if (!title || !ingredients || !instructions) {
@@ -222,10 +240,20 @@ app.post('/api/recipes', auth, async (req, res) => {
     })
 
     const [result] = await connection.execute(
-      `INSERT INTO recipe (user_id, title, ingredients, instructions, image_url)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO recipe (user_id, title, ingredients, instructions, image_url, is_published)
+      VALUES (?, ?, ?, ?, ?, FALSE)`,
       [userId, title, ingredients, instructions, image_url || null]
     )
+
+    const recipeId = result.insertId
+
+    for (const catId of categoryIds || []) {
+      await connection.execute(
+        'INSERT INTO recipe_category (recipe_id, category_id) VALUES (?, ?)',
+        [recipeId, catId]
+      )
+    }
+
 
     await connection.end()
     res.status(201).json({
@@ -263,9 +291,8 @@ app.get('/api/recipes', auth, async (req, res) => {
   }
 })
 
-// Rezept aktualisieren (geschützt)
-app.put('/api/recipes/:id', auth, async (req, res) => {
-  const { title, ingredients, instructions, image_url } = req.body
+app.put('/api/recipes/:id', auth, async (req, res) => { // Rezept aktualisieren (geschützt)
+  const { title, ingredients, instructions, image_url, categoryIds } = req.body
   const recipeId = req.params.id
   const userId = req.user.id
 
@@ -274,13 +301,9 @@ app.put('/api/recipes/:id', auth, async (req, res) => {
   }
 
   try {
-    const connection = await mysql.createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME
-    })
+    const connection = await mysql.createConnection(dbConfig)
 
+    // 1. Update the recipe
     const [result] = await connection.execute(
       `UPDATE recipe
        SET title = ?, ingredients = ?, instructions = ?, image_url = ?
@@ -288,18 +311,33 @@ app.put('/api/recipes/:id', auth, async (req, res) => {
       [title, ingredients, instructions, image_url || null, recipeId, userId]
     )
 
-    await connection.end()
-
     if (result.affectedRows === 0) {
+      await connection.end()
       return res.status(404).json({ error: 'Rezept nicht gefunden oder keine Berechtigung.' })
     }
 
+    // 2. Delete old categories
+    await connection.execute(
+      'DELETE FROM recipe_category WHERE recipe_id = ?',
+      [recipeId]
+    )
+
+    // 3. Insert new categories
+    for (const catId of categoryIds || []) {
+      await connection.execute(
+        'INSERT INTO recipe_category (recipe_id, category_id) VALUES (?, ?)',
+        [recipeId, catId]
+      )
+    }
+
+    await connection.end()
     res.status(200).json({ message: 'Rezept erfolgreich aktualisiert.' })
   } catch (err) {
     console.error('❌ Fehler beim Aktualisieren des Rezepts:', err.message)
     res.status(500).json({ error: 'Interner Serverfehler.' })
   }
 })
+
 
 // Rezept löschen (geschützt)
 app.delete('/api/recipes/:id', auth, async (req, res) => {
@@ -343,11 +381,16 @@ app.get('/api/public-recipes', async (req, res) => {
 
     const [recipes] = await connection.execute(`
       SELECT r.id, r.title, r.ingredients, r.instructions, r.image_url, r.user_id,
-             u.display_name, u.email
+            u.display_name, u.email,
+            GROUP_CONCAT(c.name) AS categories
       FROM recipe r
       JOIN user u ON r.user_id = u.id
+      LEFT JOIN recipe_category rc ON rc.recipe_id = r.id
+      LEFT JOIN category c ON rc.category_id = c.id
       WHERE r.is_published = TRUE
+      GROUP BY r.id
       ORDER BY r.created_at DESC
+
     `)
 
     await connection.end()
@@ -701,6 +744,23 @@ app.put('/api/recipes/:id/unpublish', auth, async (req, res) => {
     res.status(200).json({ message: 'Rezept wurde zurückgezogen.' })
   } catch (err) {
     console.error('❌ Fehler beim Zurückziehen:', err.message)
+    res.status(500).json({ error: 'Interner Serverfehler.' })
+  }
+})
+
+//(distinct categories)
+app.get('/api/categories', async (_req, res) => {
+  try {
+    const connection = await mysql.createConnection(dbConfig)
+    const [rows] = await connection.execute(`
+      SELECT id, name FROM category ORDER BY name
+
+    `)
+    await connection.end()
+    res.json({ categories: rows })
+
+  } catch (err) {
+    console.error('❌ Fehler beim Abrufen der Kategorien:', err.message)
     res.status(500).json({ error: 'Interner Serverfehler.' })
   }
 })
