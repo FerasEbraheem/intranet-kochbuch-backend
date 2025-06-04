@@ -1,0 +1,16 @@
+{
+  "tags": {
+    "allowUnknownTags": true
+  },
+  "source": {
+    "include": ["src/__tests__"],
+    "includePattern": ".js$"
+  },
+  "opts": {
+    "destination": "./docs/tests-docs",
+    "recurse": true
+  },
+  "plugins": [
+    "plugins/markdown"
+  ]
+}

@@ -1,38 +1,58 @@
-# Node modules
+# ========================
+# 📦 Node Modules & Env
+# ========================
 node_modules/
-
-# Environment variables
 .env
 .env.local
 
-# Logs
+# ========================
+# 🪵 Logs
+# ========================
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Coverage reports
+# ========================
+# 🧪 Jest
+# ========================
 coverage/
 coverage-lcov/
 lcov-report/
-
-# JSDoc output
-docs/jsdoc/
-
-# Jest cache
 jest-cache/
 jest-output/
 
-# System files
+# ========================
+# 📚 JSDoc Output
+# ========================
+docs/jsdoc/
+docs/tests-docs/
+
+# ========================
+# 🖼 Screenshots and assets
+# (Optional if stored only locally)
+# ========================
+docs/screenshots/
+!docs/screenshots/.gitkeep
+
+# ========================
+# 🧪 Test Artifacts (optional, if generated)
+# ========================
+**/*.test.js.html
+
+# ========================
+# 📁 OS / IDE Files
+# ========================
 .DS_Store
 Thumbs.db
-
-# IDE/editor folders
 .vscode/
 .idea/
 *.sw?
 
-# Uploaded files (if they are local only)
+# ========================
+# 📤 Uploaded Files
+# (Ignored unless intentionally tracked)
+# ========================
 uploads/
 uploads/*
 !uploads/.gitkeep

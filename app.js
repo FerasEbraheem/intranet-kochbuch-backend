@@ -54,6 +54,8 @@ app.use(express.json())
 app.use('/uploads', express.static(uploadDir))
 app.use('/coverage', express.static(path.join(__dirname, 'coverage/lcov-report')))
 app.use('/docs', express.static(path.join(__dirname, 'docs')))
+app.use('/docs/tests-docs', express.static(path.join(__dirname, 'docs/tests-docs')))
+
 
 /**
  * Root route for health check

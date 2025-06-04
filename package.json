@@ -7,7 +7,8 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
-    "doc": "jsdoc -c jsdoc.json"
+    "doc": "jsdoc -c jsdoc.json",
+    "doc:tests": "jsdoc -c jsdoc.tests.json"
   },
   "repository": {
     "type": "git",

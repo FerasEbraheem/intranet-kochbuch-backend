@@ -27,11 +27,12 @@ mark favorites, add comments, and organize recipes using categories.
 📦 intranet-kochbuch-backend/
 ├──📁 coverage/                  # Jest coverage report (ignored in Git)
 ├──📁 node_modules/              # (ignored in Git)
-├──📁docs/                       # (ERD, diagrams, etc.)
+├──📁 docs/                      # (ERD, diagrams, etc.)
+│   └──📁 screenshots/                      
 ├──📁 sql/
 │   └──📄 user_recipe.sql        # SQL schema or seed data
 ├──📁 src/
-│   ├──📁 __tests__/           # All test suites
+│   ├──📁 __tests__/             # All test suites
 │   │   ├──📄 app.test.js
 │   │   ├──📄 auth.test.js
 │   │   ├──📄 authRoutes.test.js
@@ -393,6 +394,106 @@ http://localhost:5000/coverage/
 ✅ Most routes reach 100% coverage.
 
 📉 Some uncovered branches still exist in complex routes like recipeRoutes.js — these are marked for future enhancement.
+---
+
+## 📄 Documentation Generation
+
+### 1. Main Source Code Documentation
+
+Configuration file: `jsdoc.json`
+
+```json
+{
+  "tags": {
+    "allowUnknownTags": true
+  },
+  "source": {
+    "include": ["src", "app.js", "server.js"],
+    "includePattern": ".js$",
+    "excludePattern": "(node_modules/|docs)"
+  },
+  "opts": {
+    "destination": "./docs/jsdoc",
+    "recurse": true
+  },
+  "plugins": ["plugins/markdown"]
+}
+```
+
+Run the command to generate documentation:
+
+```bash
+npm run doc
+```
+
+📂 Accessible at:
+```
+http://localhost:5000/docs/jsdoc/index.html
+```
+
+🖼️ Screenshots *![jsdoc](./docs/screenshots/jsdoc.png)*
+
+---
+
+### 2. Test Files Documentation
+
+Configuration file: `jsdoc.tests.json`
+
+```json
+{
+  "tags": {
+    "allowUnknownTags": true
+  },
+  "source": {
+    "include": ["src/__tests__"],
+    "includePattern": ".js$"
+  },
+  "opts": {
+    "destination": "./docs/tests-docs",
+    "recurse": true
+  },
+  "plugins": ["plugins/markdown"]
+}
+```
+
+Run the command to generate test documentation:
+
+```bash
+npm run doc:tests
+```
+
+📂 Accessible at:
+```
+http://localhost:5000/docs/tests-docs/index.html
+```
+
+🖼️ Screenshots *![jsdoc-tests](./docs/screenshots/jsdoc-tests.png)* 
+
+---
+
+## ⚙️ Required Modifications
+
+### `app.js`
+
+Ensure the documentation folders are served statically:
+
+```js
+app.use('/docs', express.static(path.join(__dirname, 'docs')));
+app.use('/docs/tests-docs', express.static(path.join(__dirname, 'docs/tests-docs')));
+```
+
+### `package.json`
+
+Add the documentation scripts:
+
+```json
+"scripts": {
+  ...
+  "doc": "jsdoc -c jsdoc.json",
+  "doc:tests": "jsdoc -c jsdoc.tests.json"
+}
+```
+
 ---
 
 ## 📄 License
