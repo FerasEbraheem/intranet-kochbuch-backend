@@ -1,11 +1,30 @@
-// middleware/auth.js
 import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey'
 
 /**
- * Middleware for verifying JWT tokens.
- * Expected header: Authorization: Bearer <token>
+ * @module middleware/auth
+ */
+
+/**
+ * JWT authentication middleware for Express routes.
+ *
+ * This middleware checks for a JWT token in the `Authorization` header
+ * (expected format: `Bearer <token>`). If the token is valid, it adds
+ * the decoded payload to `req.user` and calls `next()`.
+ *
+ * @function
+ * @param {Object} req - Express request object (with headers and user)
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ *
+ * @returns {void}
+ *
+ * @example
+ * // Protect a route
+ * router.get('/profile', auth, (req, res) => {
+ *   res.json(req.user);
+ * });
  */
 const auth = (req, res, next) => {
   const authHeader = req.headers.authorization
