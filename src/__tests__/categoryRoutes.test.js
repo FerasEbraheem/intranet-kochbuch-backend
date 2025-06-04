@@ -1,7 +1,14 @@
+/**
+ * @file __tests__/categoryRoutes.test.js
+ * @description Tests for the `/categories` route.
+ * Verifies correct response and database error handling.
+ */
+
 import { jest } from '@jest/globals'
 import request from 'supertest'
 import express from 'express'
 
+// Mocked DB connection
 const mockExecute = jest.fn()
 const mockEnd = jest.fn()
 const mockGetConnection = jest.fn().mockResolvedValue({
@@ -13,17 +20,25 @@ jest.unstable_mockModule('../db/db.js', () => ({
   getConnection: mockGetConnection
 }))
 
+// Load category route after mocking DB
 const categoryRoutesModule = await import('../routes/categoryRoutes.js')
 const categoryRoutes = categoryRoutesModule.default
 
+// Setup Express test app
 const app = express()
 app.use(categoryRoutes)
 
+/**
+ * Test suite for GET /categories endpoint.
+ */
 describe('GET /categories', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
+  /**
+   * Should return a list of categories and status 200.
+   */
   test('should return categories with 200', async () => {
     const fakeCategories = [[
       { id: 1, name: 'Breakfast' },
@@ -41,6 +56,9 @@ describe('GET /categories', () => {
     expect(mockEnd).toHaveBeenCalled()
   })
 
+  /**
+   * Should return 500 and error message if database query fails.
+   */
   test('should handle DB error', async () => {
     mockExecute.mockRejectedValueOnce(new Error('DB error'))
 
