@@ -2,9 +2,38 @@ import express from 'express'
 import { getConnection } from '../db/db.js'
 import auth from '../middleware/auth.js'
 
+/**
+ * @module routes/profileRoutes
+ * @description Routes for viewing and updating the authenticated user's profile.
+ */
+
 const router = express.Router()
 
-// Profil abrufen
+/**
+ * Get the authenticated user's profile.
+ *
+ * @name GET /profile
+ * @function
+ * @memberof module:routes/profileRoutes
+ * @param {Object} req - Express request object (contains authenticated user)
+ * @param {Object} res - Express response object
+ * @returns {void}
+ *
+ * @example
+ * // Request with Authorization header:
+ * GET /profile
+ * Authorization: Bearer <token>
+ *
+ * // Example response:
+ * {
+ *   "user": {
+ *     "id": 1,
+ *     "email": "user@example.com",
+ *     "display_name": "User",
+ *     "avatar_url": "https://example.com/avatar.jpg"
+ *   }
+ * }
+ */
 router.get('/profile', auth, async (req, res) => {
   const userId = req.user.id
 
@@ -27,7 +56,28 @@ router.get('/profile', auth, async (req, res) => {
   }
 })
 
-// Profil aktualisieren
+/**
+ * Update the authenticated user's profile.
+ *
+ * @name PUT /profile
+ * @function
+ * @memberof module:routes/profileRoutes
+ * @param {Object} req - Express request object (includes user and body)
+ * @param {Object} res - Express response object
+ * @returns {void}
+ *
+ * @example
+ * // Request body:
+ * {
+ *   "display_name": "Neuer Name",
+ *   "avatar_url": "https://example.com/avatar.jpg"
+ * }
+ *
+ * // Response:
+ * {
+ *   "message": "Profil aktualisiert."
+ * }
+ */
 router.put('/profile', auth, async (req, res) => {
   const userId = req.user.id
   const { display_name, avatar_url } = req.body
