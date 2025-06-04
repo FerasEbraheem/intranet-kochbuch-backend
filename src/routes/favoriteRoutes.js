@@ -2,9 +2,28 @@ import express from 'express'
 import { getConnection } from '../db/db.js'
 import auth from '../middleware/auth.js'
 
+/**
+ * @module routes/favoriteRoutes
+ * @description Routes for managing user's favorite recipes.
+ */
+
 const router = express.Router()
 
-// Rezept zur Favoritenliste hinzufügen
+/**
+ * Add a recipe to the user's favorites.
+ *
+ * @name POST /favorites/:recipeId
+ * @function
+ * @memberof module:routes/favoriteRoutes
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {void}
+ *
+ * @example
+ * // With Authorization header and URL:
+ * POST /favorites/12
+ * Authorization: Bearer <token>
+ */
 router.post('/favorites/:recipeId', auth, async (req, res) => {
   const userId = req.user.id
   const recipeId = req.params.recipeId
@@ -23,7 +42,32 @@ router.post('/favorites/:recipeId', auth, async (req, res) => {
   }
 })
 
-// Favoriten abrufen
+/**
+ * Get all favorite recipes of the logged-in user.
+ *
+ * @name GET /favorites
+ * @function
+ * @memberof module:routes/favoriteRoutes
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {void}
+ *
+ * @example
+ * // Example response:
+ * {
+ *   "recipes": [
+ *     {
+ *       "id": 12,
+ *       "title": "Pasta Carbonara",
+ *       "ingredients": "...",
+ *       "instructions": "...",
+ *       "image_url": "...",
+ *       "display_name": "Lina",
+ *       "email": "lina@example.com"
+ *     }
+ *   ]
+ * }
+ */
 router.get('/favorites', auth, async (req, res) => {
   const userId = req.user.id
 
@@ -45,7 +89,21 @@ router.get('/favorites', auth, async (req, res) => {
   }
 })
 
-// Rezept aus Favoriten entfernen
+/**
+ * Remove a recipe from the user's favorites.
+ *
+ * @name DELETE /favorites/:recipeId
+ * @function
+ * @memberof module:routes/favoriteRoutes
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {void}
+ *
+ * @example
+ * // Request:
+ * DELETE /favorites/12
+ * Authorization: Bearer <token>
+ */
 router.delete('/favorites/:recipeId', auth, async (req, res) => {
   const userId = req.user.id
   const recipeId = req.params.recipeId
