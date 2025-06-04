@@ -6,10 +6,32 @@ import auth from '../middleware/auth.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
+/**
+ * @module routes/authRoutes
+ * @description Auth routes for user registration, login, and protected route.
+ */
+
 const router = express.Router()
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey'
 
-// Registrierung
+/**
+ * Register a new user.
+ *
+ * @name POST /register
+ * @function
+ * @memberof module:routes/authRoutes
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {void}
+ *
+ * @example
+ * // Request body:
+ * {
+ *   "email": "user@example.com",
+ *   "password": "123456",
+ *   "display_name": "User"
+ * }
+ */
 router.post('/register', async (req, res) => {
   const { email, password, display_name } = req.body
 
@@ -60,7 +82,23 @@ router.post('/register', async (req, res) => {
   }
 })
 
-// Login
+/**
+ * Log in a registered user.
+ *
+ * @name POST /login
+ * @function
+ * @memberof module:routes/authRoutes
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {void}
+ *
+ * @example
+ * // Request body:
+ * {
+ *   "email": "user@example.com",
+ *   "password": "123456"
+ * }
+ */
 router.post('/login', async (req, res) => {
   const { email, password } = req.body
 
@@ -107,7 +145,20 @@ router.post('/login', async (req, res) => {
   }
 })
 
-// Testgeschützte Route
+/**
+ * A protected route that requires authentication.
+ *
+ * @name GET /protected
+ * @function
+ * @memberof module:routes/authRoutes
+ * @param {Object} req - Express request object (must include authenticated user)
+ * @param {Object} res - Express response object
+ * @returns {void}
+ *
+ * @example
+ * // Request with Authorization header:
+ * Authorization: Bearer <token>
+ */
 router.get('/protected', auth, (req, res) => {
   res.json({ message: 'Erfolgreich authentifiziert!', user: req.user })
 })
