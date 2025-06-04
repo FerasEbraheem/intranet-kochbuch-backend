@@ -2,9 +2,23 @@ import express from 'express'
 import { getConnection } from '../db/db.js'
 import auth from '../middleware/auth.js'
 
+/**
+ * @module routes/recipeRoutes
+ * @description Routes for managing and viewing recipes.
+ */
+
 const router = express.Router()
 
-// Rezept hinzufügen
+/**
+ * Add a new recipe for the authenticated user.
+ *
+ * @name POST /recipes
+ * @function
+ * @memberof module:routes/recipeRoutes
+ * @param {Object} req - Express request object with body: title, ingredients, instructions, image_url, categoryIds[]
+ * @param {Object} res - Express response object
+ * @returns {void}
+ */
 router.post('/recipes', auth, async (req, res) => {
   const { title, ingredients, instructions, image_url, categoryIds } = req.body
   const userId = req.user.id
@@ -39,7 +53,16 @@ router.post('/recipes', auth, async (req, res) => {
   }
 })
 
-// Eigene Rezepte abrufen
+/**
+ * Get all recipes created by the authenticated user.
+ *
+ * @name GET /recipes
+ * @function
+ * @memberof module:routes/recipeRoutes
+ * @param {Object} req - Express request (contains authenticated user)
+ * @param {Object} res - Express response
+ * @returns {void}
+ */
 router.get('/recipes', auth, async (req, res) => {
   const userId = req.user.id
 
@@ -57,7 +80,16 @@ router.get('/recipes', auth, async (req, res) => {
   }
 })
 
-// Rezept aktualisieren
+/**
+ * Update an existing recipe.
+ *
+ * @name PUT /recipes/:id
+ * @function
+ * @memberof module:routes/recipeRoutes
+ * @param {Object} req - Express request (contains recipeId and updated fields)
+ * @param {Object} res - Express response
+ * @returns {void}
+ */
 router.put('/recipes/:id', auth, async (req, res) => {
   const { title, ingredients, instructions, image_url, categoryIds } = req.body
   const recipeId = req.params.id
@@ -97,7 +129,16 @@ router.put('/recipes/:id', auth, async (req, res) => {
   }
 })
 
-// Rezept löschen
+/**
+ * Delete a recipe.
+ *
+ * @name DELETE /recipes/:id
+ * @function
+ * @memberof module:routes/recipeRoutes
+ * @param {Object} req - Express request with recipe ID
+ * @param {Object} res - Express response
+ * @returns {void}
+ */
 router.delete('/recipes/:id', auth, async (req, res) => {
   const recipeId = req.params.id
   const userId = req.user.id
@@ -121,7 +162,16 @@ router.delete('/recipes/:id', auth, async (req, res) => {
   }
 })
 
-// Öffentliches Rezept veröffentlichen
+/**
+ * Publish a recipe.
+ *
+ * @name PUT /recipes/:id/publish
+ * @function
+ * @memberof module:routes/recipeRoutes
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ * @returns {void}
+ */
 router.put('/recipes/:id/publish', auth, async (req, res) => {
   const recipeId = req.params.id
   const userId = req.user.id
@@ -145,7 +195,16 @@ router.put('/recipes/:id/publish', auth, async (req, res) => {
   }
 })
 
-// Rezept zurückziehen
+/**
+ * Unpublish a recipe.
+ *
+ * @name PUT /recipes/:id/unpublish
+ * @function
+ * @memberof module:routes/recipeRoutes
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ * @returns {void}
+ */
 router.put('/recipes/:id/unpublish', auth, async (req, res) => {
   const recipeId = req.params.id
   const userId = req.user.id
@@ -169,7 +228,16 @@ router.put('/recipes/:id/unpublish', auth, async (req, res) => {
   }
 })
 
-// Öffentliche Rezepte abrufen
+/**
+ * Get all published public recipes.
+ *
+ * @name GET /public-recipes
+ * @function
+ * @memberof module:routes/recipeRoutes
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {void}
+ */
 router.get('/public-recipes', async (req, res) => {
   try {
     const connection = await getConnection()
@@ -193,7 +261,16 @@ router.get('/public-recipes', async (req, res) => {
   }
 })
 
-// Einzelnes öffentliches Rezept abrufen
+/**
+ * Get a single published recipe by ID.
+ *
+ * @name GET /public-recipes/:id
+ * @function
+ * @memberof module:routes/recipeRoutes
+ * @param {Object} req - Express request with recipe ID
+ * @param {Object} res - Express response
+ * @returns {void}
+ */
 router.get('/public-recipes/:id', async (req, res) => {
   const recipeId = req.params.id
 
