@@ -2,9 +2,29 @@ import express from 'express'
 import { getConnection } from '../db/db.js'
 import auth from '../middleware/auth.js'
 
+/**
+ * @module routes/commentRoutes
+ * @description Routes for handling recipe comments.
+ */
+
 const router = express.Router()
 
-// Kommentar hinzufügen
+/**
+ * Add a comment to a recipe.
+ *
+ * @name POST /comments/:recipeId
+ * @function
+ * @memberof module:routes/commentRoutes
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {void}
+ *
+ * @example
+ * // Request body:
+ * {
+ *   "text": "Leckeres Rezept!"
+ * }
+ */
 router.post('/comments/:recipeId', auth, async (req, res) => {
   const recipeId = req.params.recipeId
   const userId = req.user.id
@@ -28,7 +48,30 @@ router.post('/comments/:recipeId', auth, async (req, res) => {
   }
 })
 
-// Kommentare abrufen
+/**
+ * Get all comments for a recipe.
+ *
+ * @name GET /comments/:recipeId
+ * @function
+ * @memberof module:routes/commentRoutes
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {void}
+ *
+ * @example
+ * // Example response:
+ * {
+ *   "comments": [
+ *     {
+ *       "id": 5,
+ *       "user_id": 2,
+ *       "text": "Leckeres Rezept!",
+ *       "display_name": "Fatima",
+ *       "email": "fatima@example.com"
+ *     }
+ *   ]
+ * }
+ */
 router.get('/comments/:recipeId', async (req, res) => {
   const recipeId = req.params.recipeId
 
@@ -49,7 +92,16 @@ router.get('/comments/:recipeId', async (req, res) => {
   }
 })
 
-// Kommentar löschen
+/**
+ * Delete a user's own comment.
+ *
+ * @name DELETE /comments/:commentId
+ * @function
+ * @memberof module:routes/commentRoutes
+ * @param {Object} req - Express request object (must include authenticated user)
+ * @param {Object} res - Express response object
+ * @returns {void}
+ */
 router.delete('/comments/:commentId', auth, async (req, res) => {
   const commentId = req.params.commentId
   const userId = req.user.id
