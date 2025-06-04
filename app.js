@@ -36,6 +36,9 @@ app.use(cors(corsOptions))
 app.use(express.json())
 app.use('/uploads', express.static(uploadDir))
 
+
+app.use('/coverage', express.static(path.join(__dirname, 'coverage/lcov-report')))
+
 app.get('/', (req, res) => {
   res.send('API läuft: Intranet-Kochbuch Backend')
 })
