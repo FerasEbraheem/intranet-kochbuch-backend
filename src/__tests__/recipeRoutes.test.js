@@ -9,11 +9,11 @@ const mockGetConnection = jest.fn().mockResolvedValue({
   end: mockEnd
 });
 
-// نُمرر مستخدم وهمي لاختبار المسارات المحمية
-const fakeAuth = (req, res, next) => {
-  req.user = { id: 1 };
-  next();
-};
+// Wir übergeben einen Fake-Benutzer, um die geschützten Routen zu testen
+function fakeAuth(req, res, next) {
+    req.user = { id: 1 };
+    next();
+}
 
 let app;
 
