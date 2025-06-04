@@ -1,5 +1,37 @@
 import { getConnection } from './db.js'
 
+/**
+ * @module db/init
+ */
+
+/**
+ * Initializes the database by creating necessary tables if they don't exist.
+ *
+ * This function creates the following tables:
+ * - `user`: Stores user accounts.
+ * - `recipe`: Stores recipe data linked to users.
+ * - `category`: Stores unique recipe categories.
+ * - `recipe_category`: Many-to-many relationship between recipes and categories.
+ * - `favorite`: Many-to-many relationship for user-favorite recipes.
+ * - `comment`: Stores user comments on recipes.
+ *
+ * Relationships:
+ * - `recipe.user_id → user.id`
+ * - `recipe_category.recipe_id → recipe.id`
+ * - `recipe_category.category_id → category.id`
+ * - `favorite.user_id → user.id`
+ * - `favorite.recipe_id → recipe.id`
+ * - `comment.recipe_id → recipe.id`
+ * - `comment.user_id → user.id`
+ *
+ * @async
+ * @function
+ * @returns {Promise<Object>} Resolves when initialization is complete
+ *
+ * @example
+ * import { initDatabase } from './db/init.js';
+ * await initDatabase();
+ */
 export async function initDatabase() {
   try {
     const connection = await getConnection()
