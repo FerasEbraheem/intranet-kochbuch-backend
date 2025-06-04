@@ -21,14 +21,27 @@ mark favorites, add comments, and organize recipes using categories.
 
 ---
 
-## 📂 Folder Structure
+## 📂 intranet-kochbuch-backend (Folder Structure)
 
 ```bash
 📦 intranet-kochbuch-backend/
+├──📁 coverage/                  # Jest coverage report (ignored in Git)
+├──📁 node_modules/              # (ignored in Git)
 ├──📁docs/                       # (ERD, diagrams, etc.)
 ├──📁 sql/
 │   └──📄 user_recipe.sql        # SQL schema or seed data
 ├──📁 src/
+│   ├──📁 __tests__/           # All test suites
+│   │   ├──📄 app.test.js
+│   │   ├──📄 auth.test.js
+│   │   ├──📄 authRoutes.test.js
+│   │   ├──📄 categoryRoutes.test.js
+│   │   ├──📄 commentRoutes.test.js
+│   │   ├──📄 favoriteRoutes.test.js
+│   │   ├──📄 init.test.js
+│   │   ├──📄 profileRoutes.test.js
+│   │   ├──📄 recipeRoutes.test.js
+│   │   └──📄 uploadRoutes.test.js
 │   ├──📁 db/
 │   │   ├──📄 db.js              # DB connection handler
 │   │   └──📄 init.js            # Tables initialization logic
@@ -47,6 +60,8 @@ mark favorites, add comments, and organize recipes using categories.
 ├──📄 server.js                  # Entry point to run the server
 ├──📄 .env                       # Environment config (not committed)
 ├──📄 example.env                # Template for .env setup
+├──📄 jest.config.js             # Jest configuration
+├──📄 package-lock.json
 ├──📄 package.json               # NPM scripts & dependencies
 ├──📄 .gitignore                 # Ignored files and folders
 └──📄 README.md                  # This file
@@ -106,9 +121,9 @@ The API will run at: `http://localhost:5000`
 ![ERD](./docs/screenshots/ERD.png)
 
 ---
-## 📸 Screenshots
+## 📸 Screenshots Diagram
 
-Screenshots can be placed in `docs/screenshots/`.
+![ERD2](./docs/screenshots/ERD2.png)
 
 ---
 
@@ -247,6 +262,137 @@ Add screenshots of your API responses or Postman examples here. For example:
 <!-- Example placeholder -->
 ![Public Recipes Screenshot](docs/screenshots/public-recipes.png)
 
+---
+
+
+
+# 🧪 API Backend Tests – Intranet-Kochbuch
+
+This project includes comprehensive unit and integration tests for the backend API of the Intranet-Kochbuch system. All routes and core logic have been thoroughly tested.
+
+---
+
+## 📁 Test Structure
+
+All test files are located in:  
+`src/__tests__/`
+
+Each file targets a specific route or functionality.
+
+---
+
+## ✅ Tested Routes
+
+### 🔐 Authentication (src/routes/authRoutes.js)
+- `POST /register` – Registers a new user, checks for duplicate emails
+- `POST /login` – Authenticates user
+- `GET /protected` – Protected route using JWT middleware
+
+### 🍽️ Recipes (src/routes/recipeRoutes.js)
+- `GET /public-recipes` – Fetches all public recipes
+- `GET /recipes` – Fetches user's private recipes
+- `POST /recipes` – Creates a new recipe
+- `PUT /recipes/:id` – Updates an existing recipe
+- `DELETE /recipes/:id` – Deletes a recipe
+
+### 💬 Comments (src/routes/commentRoutes.js)
+- `POST /comments/:recipeId` – Adds a comment to a recipe
+- `GET /comments/:recipeId` – Retrieves comments for a recipe
+- `DELETE /comments/:commentId` – Deletes a user’s comment
+
+### ⭐ Favorites (src/routes/favoriteRoutes.js)
+- `POST /favorites/:recipeId` – Adds a recipe to favorites
+- `GET /favorites` – Retrieves all favorite recipes
+- `DELETE /favorites/:recipeId` – Removes a recipe from favorites
+
+### 📂 Categories (src/routes/categoryRoutes.js)
+- `GET /categories` – Retrieves all available categories
+
+### 👤 Profile (src/routes/profileRoutes.js)
+- `GET /profile` – Retrieves user profile
+- `PUT /profile` – Updates user profile
+
+### 🖼️ Uploads (src/routes/uploadRoutes.js)
+- `POST /upload-image` – Uploads a single image and returns its URL
+
+### 🔧 App Initialization (app.js)
+- Verifies that `initDatabase()` is called
+- `GET /` – Base health check route
+- Verifies route availability for `/api/public-recipes` and `/api/categories`
+
+---
+
+## 🧪 What Was Tested
+
+| Aspect              | Description                                 |
+|---------------------|---------------------------------------------|
+| Validation          | Empty fields, required fields               |
+| Success cases       | Correct responses and data creation         |
+| Error handling      | Graceful fallback for DB or logic failures  |
+| Authentication      | JWT token verification for protected routes |
+| Integration         | Middleware, routing, DB interaction mocks   |
+| File upload         | Proper handling of image upload requests    |
+
+---
+
+## 🛠️ Tools & Frameworks
+
+- **Jest** – Unit testing framework
+- **Supertest** – HTTP assertions for Express routes
+- **@jest/globals** – ESM-compatible mocking
+- **Node.js (ESM)** – Modern JavaScript modules
+
+---
+
+## ▶️ Running the Tests
+
+```bash
+npm test
+```
+---
+
+## 📊 Test Coverage Report
+
+The project uses Jest with built-in code coverage tracking (`--coverage`). This helps visualize which parts of the backend codebase are fully tested and where improvements are needed.
+
+### 🔎 Key Coverage Stats
+
+| Metric       | Value     |
+|--------------|-----------|
+| Statements   | **81.04%** |
+| Branches     | **78.12%** |
+| Functions    | **84%**    |
+| Lines        | **81.27%** |
+
+You can view the live report by running:
+
+```bash
+npm test
+```
+---
+Then open this file in your browser:
+
+```bash
+/coverage/lcov-report/index.html
+```
+Or, with the server running at http://localhost:5000:
+
+```bash
+http://localhost:5000/coverage/
+```
+
+## 🖼️ Screenshots
+
+🔹 Overall Coverage Summary
+![All-files](./docs/screenshots/All-files.png)
+🔹 Routes Breakdown
+![All-files-routes](./docs/screenshots/All-files-routes.png)
+🔹 CLI Report Snapshot
+![CLI](./docs/screenshots/all-tests.png)
+
+✅ Most routes reach 100% coverage.
+
+📉 Some uncovered branches still exist in complex routes like recipeRoutes.js — these are marked for future enhancement.
 ---
 
 ## 📄 License
