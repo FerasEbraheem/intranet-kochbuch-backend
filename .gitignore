@@ -3,19 +3,7 @@ node_modules/
 
 # Environment variables
 .env
-
-# Logs
-*.log
-
-# System files
-.DS_Store
-Thumbs.db
-# Node modules
-node_modules/
-
-# Coverage reports
-coverage/
-coverage-lcov/
+.env.local
 
 # Logs
 *.log
@@ -23,17 +11,28 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Env files
-.env
-.env.local
+# Coverage reports
+coverage/
+coverage-lcov/
+lcov-report/
 
-# OS-specific
+# JSDoc output
+docs/jsdoc/
+
+# Jest cache
+jest-cache/
+jest-output/
+
+# System files
 .DS_Store
 Thumbs.db
 
 # IDE/editor folders
 .vscode/
 .idea/
+*.sw?
 
-# Jest cache
-jest-cache/
+# Uploaded files (if they are local only)
+uploads/
+uploads/*
+!uploads/.gitkeep
