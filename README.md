@@ -1,34 +1,39 @@
 # Intranet Kochbuch Backend
 
-A secure and feature-rich **RESTful API** backend for the internal Intranet Kochbuch (cookbook) application.
-Built with **Node.js**, **Express**, and **MySQL**, this backend allows users to manage and share recipes,
-mark favorites, add comments, and organize recipes using categories.
+This project provides the **Intranet Kochbuch** backend – a secure, RESTful API for an internal recipe-sharing application. It is built with **Node.js** (v22.x LTS), **Express**, and **MySQL**, following a modular architecture. Node.js is a fast, event-driven JavaScript runtime built on Chrome’s V8 engine, and Express.js is a minimalist yet robust web framework. MySQL is a popular open-source relational database management system (RDBMS) known for its reliability, performance, and scalability. Together, these technologies enable this backend to efficiently handle user authentication, recipe data, and related features. Users can register/login (with stateless JWT tokens), perform CRUD on recipes, add categories, mark favorites, comment on recipes, and upload images.
 
 ---
 
 ## 🔧 Features
 
-- Registration and login with JWT authentication
-- Password hashing using bcrypt
-- CRUD operations for recipes
-- Recipe categorization & publication
-- User-specific favorites system
-- Commenting system for recipes
-- Image uploads via multer
-- Middleware for authentication
-- Structured project organization
-- Static serving of uploaded images
+- **User Authentication:** Registration and login with JWT-based authentication (stateless JSON Web Tokens). All protected routes require a valid token.
+- **Password Security:** Passwords are hashed using **bcrypt** before storage. Bcrypt is a widely-used library for secure, irreversible password hashing.
+- **Recipe Management:** Full CRUD operations for recipes (create, read, update, delete), including title, ingredients, instructions, and an optional image.
+- **Recipe Publication:** Each recipe has an `is_published` flag. Unpublished recipes are private to the author; published ones are accessible via the public API.
+- **Categories:** Static list of categories (tags) to organize recipes. Recipes can be assigned to multiple categories.
+- **Favorites:** Users can mark recipes as favorites. The API tracks favorites per user.
+- **Comments:** Users can add comments to recipes. Each comment links to a recipe and its author.
+- **Image Uploads:** Recipe images can be uploaded via the `/api/upload-image` endpoint. We use **Multer** middleware for handling `multipart/form-data` uploads.
+- **Middleware:** Reusable Express middleware handles JWT authentication and other tasks.
+- **Project Structure:** Cleanly organized folders (`routes`, `db`, `middleware`, `__tests__`, etc.) for maintainability.
+- **Static Files:** Uploaded images are served statically (e.g. at `http://localhost:5000/uploads/<filename>`).
+- **Testing:** Comprehensive unit and integration tests with **Jest** and **SuperTest**
+ensure code correctness. (Tests cover success/error cases, validations, auth, and database interactions.)
+- **Environment Configuration:** Uses a `.env` file (via `dotenv`) for configuration. An `example.env` template is provided.
+- **Documentation:** Source code is documented with JSDoc. Static API documentation can be generated and served (see *Documentation Generation* below).
 
 ---
 
-## 📂 intranet-kochbuch-backend (Folder Structure)
+## 📂 Folder Structure
+The repository is organized as follows (key folders/files highlighted):
 
 ```bash
 📦 intranet-kochbuch-backend/
 ├──📁 coverage/                  # Jest coverage report (ignored in Git)
 ├──📁 node_modules/              # (ignored in Git)
-├──📁 docs/                      # (ERD, diagrams, etc.)
-│   └──📁 screenshots/                      
+├──📁 docs/                      # (Documentation resources like ER diagrams, screenshots, and generated JSDoc files.
+│   └──📁 screenshots/
+│   └──📁 jsdoc/                        
 ├──📁 sql/
 │   └──📄 user_recipe.sql        # SQL schema or seed data
 ├──📁 src/
@@ -65,28 +70,39 @@ mark favorites, add comments, and organize recipes using categories.
 ├──📄 package-lock.json
 ├──📄 package.json               # NPM scripts & dependencies
 ├──📄 .gitignore                 # Ignored files and folders
-└──📄 README.md                  # This file
+├──📄 README.md                  # This file
+├──📄 jsdoc.json                 # JSDoc for documenting src files
+└──📄 jsdoc.tests.json           # JSDoc for documenting test files
+
 ```
+
+The project code is divided by feature. For example, each route module in `src/routes/` handles a specific API endpoint group, and middleware is used for common tasks like authentication. The `docs/screenshots/` directory contains the Entity-Relationship Diagrams (ERDs) for the database schema.
 
 ---
 
 ## 🛠️ Installation & Setup (No Docker)
 
 ### ✅ Prerequisites
-- Node.js **v22.14.0** (latest LTS recommended)
-- MySQL server running locally or remotely
+
+- **Node.js:** version **v22.14.0** (current LTS, released Feb 2025).
+- **MySQL:** A running MySQL server (local or remote).
+- (Optional) **npm:** Comes with Node.js for package management.
+- Ensure you have write permissions for the `uploads/` directory (image storage).
 
 ### 📦 Install Dependencies
+1.Clone the repository.
+
+2.Install Node packages:
 ```bash
 npm install
 ```
 
 ### ⚙️ Configure Environment
-1. Copy the example file:
+1. Copy the example environment file:
    ```bash
    cp example.env .env
    ```
-2. Edit `.env` with your database and secret config:
+2. Open `.env` and fill in your configuration:
 
 | Variable     | Description                                  |
 |--------------|----------------------------------------------|
@@ -98,26 +114,30 @@ npm install
 | `JWT_SECRET` | Secret key to sign and verify JWT tokens     |
 
 ### 🧱 Initialize the Database
-Create your database manually (if not already):
+1. Create the MySQL database (if not already). Example:
+
 ```sql
-CREATE DATABASE your_db_name CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE your_db_name
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
 ```
-The tables will be auto-created at server start via `init.js`.
+2. Provide those credentials in `.env` (see variables above). The application’s `src/db/init.js` will automatically create the required tables (`user`, `recipe`, `category`, etc.) on server startup if they do not exist. You can also inspect `sql/user_recipe.sql` for reference schema or initial data.
 
 ### 🚀 Run the Server
-- Development mode (with file watching):
+- **Development mode** (auto-restarts on file changes with `nodemon`):
 ```bash
-npm run dev
-```
-- Production mode:
+ npm run dev 
+ ```
+- **Production mode:**
 ```bash
 npm start
 ```
-
-The API will run at: `http://localhost:5000`
+By default, the API listens at:`http://localhost:5000` (or your specified `PORT`). Visit `http://localhost:<PORT>/` to see a basic health-check response, and `http://localhost:<PORT>/coverage/` (once tests have run) to view coverage details.
 
 ---
-## 🗃️ Entity Relationship Diagram (ERD)
+## 🗃️ Entity-Relationship Diagram (ERD)
+
+The `docs/screenshots/ERD.png` file illustrates the database schema: tables (`user`, `recipe`, `category`, `recipe_category`, `comment`, `favorite`) and their relationships (e.g. foreign keys linking `recipe.user_id` to `user.id`, and join table `recipe_category` for many-to-many tags). Refer to the `docs/screenshots` folder for this diagram.
 
 ![ERD](./docs/screenshots/ERD.png)
 
@@ -167,50 +187,52 @@ The API will run at: `http://localhost:5000`
 
 ### Authentication
 
-- `POST /api/register` – Register
-- `POST /api/login` – Login
+- `POST /api/register` – Register a new user. Expects `{ email, password, display_name }`.
+- `POST /api/login` – Authenticate and receive a JWT token.
 
-### User Profile
+### User Profile (Protected)
 
-- `GET /api/profile` – Get profile *(JWT required)*
-- `PUT /api/profile` – Update profile *(JWT required)*
+- `GET /api/profile` – Get current user profile (requires valid JWT).
+- `PUT /api/profile` – Update profile (display name, avatar URL).
 
 ### Recipes
 
-- `POST /api/recipes` – Create recipe *(JWT required)*
-- `GET /api/recipes` – Get user's recipes *(JWT required)*
-- `PUT /api/recipes/:id` – Update recipe *(JWT required)*
-- `DELETE /api/recipes/:id` – Delete recipe *(JWT required)*
-- `PUT /api/recipes/:id/publish` – Publish recipe *(JWT required)*
-- `PUT /api/recipes/:id/unpublish` – Unpublish recipe *(JWT required)*
+- `POST /api/recipes` – Create a new recipe (JWT required). Body includes title, ingredients, instructions, (optional) `image_url`, etc.
+- `GET /api/recipes` – Get all recipes belonging to the logged-in user (JWT required).
+- `GET /api/recipes/:id` – Get a specific recipe by ID (own recipes).
+- `PUT /api/recipes/:id` – Update a recipe by ID (JWT required; only owner can update).
+- `DELETE /api/recipes/:id` – Delete a recipe by ID (JWT required; only owner).
+- `PUT /api/recipes/:id/publish` – Mark a recipe as published (JWT required).
+- `PUT /api/recipes/:id/unpublish` – Mark as unpublished (JWT required).
 
 ### Public Recipes
 
-- `GET /api/public-recipes` – List published recipes
-- `GET /api/public-recipes/:id` – Get single recipe
+- `GET /api/public-recipes` – List all recipes with `is_published = true`.
+- `GET /api/public-recipes/:id` – Get details of a single published recipe.
 
 ### Comments
 
-- `POST /api/comments/:recipeId` – Add comment *(JWT required)*
-- `GET /api/comments/:recipeId` – Get comments
-- `DELETE /api/comments/:commentId` – Delete comment *(JWT required)*
+- `POST /api/comments/:recipeId` – Add a comment to a published recipe (JWT required).
+- `GET /api/comments/:recipeId` – Retrieve comments for a recipe.
+- `DELETE /api/comments/:commentId` – Delete a comment (JWT required; users can delete their own comments).
 
 ### Favorites
 
-- `POST /api/favorites/:recipeId` – Add to favorites *(JWT required)*
-- `GET /api/favorites` – Get favorites *(JWT required)*
-- `DELETE /api/favorites/:recipeId` – Remove favorite *(JWT required)*
+- `POST /api/favorites/:recipeId` – Mark a recipe as favorite (JWT required).
+- `GET /api/favorites` – List all favorite recipes of the user (JWT required).
+- `DELETE /api/favorites/:recipeId` – Remove a recipe from favorites (JWT required).
 
 ### Categories
 
-- `GET /api/categories` – Get all categories
+- `GET /api/categories` –  Get all available categories (tags).
 
 ### File Upload
 
-- `POST /api/upload-image` – Upload image *(multipart/form-data)*
+- `POST /api/upload-image` – Upload an image file (multipart/form-data). Field name: `image`. Returns JSON with the file’s accessible URL.
 
 ---
 ## ❗ Error Handling
+All error responses use the JSON format:
 
 ```json
 {
@@ -227,14 +249,24 @@ The API will run at: `http://localhost:5000`
 | 500         | Internal server error          |
 
 ---
-## 🧠 Developer Notes
+🧠 **Developer Notes**
 
-- Node.js version: `v22.14.0`
-- Database: **local**
-- `uploads/` folder must be writable
-- `init.js` automatically creates required tables
-- Uploaded images served at: `http://localhost:5000/uploads/<filename>`
-- Timestamps are in UTC
+- **Node Version:** Uses Node.js v22.x (LTS “Jod” as of 2025). Any recent LTS version should work.
+- **Environment:** All configurations are via environment variables. Never commit real credentials to `.env`.
+- **Database:** MySQL must be accessible with credentials from `.env`. Tables are created on startup by `src/db/init.js`.
+- **Uploads:** The `uploads/` directory must be writable by the server. Uploaded images can be accessed via URLs like `http://localhost:5000/uploads/<filename>`.
+- **Testing:** Run `npm test` to execute Jest tests. Coverage reports are available under `coverage/` or via `http://localhost:5000/coverage/`.
+- **Documentation:** API docs are in code comments (JSDoc). After `npm run doc`, browse to `/docs/jsdoc/` for generated documentation.
+- **Error Logging:** Server logs to console. For production, consider integrating a logging service or rotating logs.
+- **Dependencies:** Key packages include:
+  - **express:** Web framework.
+  - **mysql2:** MySQL driver for Node.js.
+  - **bcrypt:** Password hashing.
+  - **jsonwebtoken:** JWT generation/verification.
+  - **multer:** File upload middleware.
+  - **jest** and **supertest:** Testing frameworks.
+- **Timezones:** All timestamps are in UTC.
+
 
 ---
 
@@ -246,22 +278,19 @@ Form field: image
 ```
 Response:
 ```json
-{ "imageUrl": "http://192.168.1.35:5000/uploads/filename.png" }
+{ "imageUrl": "http://localhost:5000/uploads/filename.png" }
 ```
 
-More endpoints available in route files under `src/routes/`.
+This endpoint uses Multer to save the image to `uploads/` and returns the accessible URL. More details on endpoints can be found in the route files under `src/routes/`.
 
 ---
 
 ## 📸 Screenshots
-Add screenshots of your API responses or Postman examples here. For example:
 
-- `GET /api/public-recipes` result in browser
-- Response after uploading a recipe image
-- Example of login + token output
+Example outputs from real API endpoints:
 
-<!-- Example placeholder -->
-![Public Recipes Screenshot](docs/screenshots/public-recipes.png)
+- 🔍 `GET /api/public-recipes` – list of public recipes  
+  ![Public Recipes JSON](./docs/screenshots/public-recipes-json.png)
 
 ---
 
@@ -275,10 +304,9 @@ This project includes comprehensive unit and integration tests for the backend A
 
 ## 📁 Test Structure
 
-All test files are located in:  
-`src/__tests__/`
-
-Each file targets a specific route or functionality.
+- All tests live in `src/__tests__/`, organized by feature (each route file has corresponding tests).
+- Tests simulate HTTP requests to the Express app (without starting a live server) and assert on the JSON responses and status codes.
+- Example: `authRoutes.test.js` checks user registration/login; `recipeRoutes.test.js` covers creating, updating, deleting recipes.
 
 ---
 
@@ -333,30 +361,40 @@ Each file targets a specific route or functionality.
 | Authentication      | JWT token verification for protected routes |
 | Integration         | Middleware, routing, DB interaction mocks   |
 | File upload         | Proper handling of image upload requests    |
-
+  
+- Tests ensure that the backend behaves as expected under both normal and edge cases, catching regressions early.
 ---
 
 ## 🛠️ Tools & Frameworks
 
-- **Jest** – Unit testing framework
-- **Supertest** – HTTP assertions for Express routes
-- **@jest/globals** – ESM-compatible mocking
-- **Node.js (ESM)** – Modern JavaScript modules
+- **Node.js (v22 LTS)** – JavaScript runtime.
+- **Express.js** – Minimal web framework.
+- **MySQL** – Relational database (via `mysql2`).
+- **Jest** – Testing framework for Node.js.
+- **SuperTest** – Library for HTTP assertions on Express apps.
+- **babel-jest** / ESM – For modern JavaScript module support in tests.
 
 ---
 
 ## ▶️ Running the Tests
-
+Execute the full test suite with coverage:
 ```bash
 npm test
 ```
+The command runs Jest and outputs results in the console. To open the coverage report:
+```bash
+npm test -- --coverage
+```
+- Then view the HTML report at `coverage/lcov-report/index.html` or visit `http://localhost:5000/coverage/` (if the server is running and serving that directory).
 ---
 
 ## 📊 Test Coverage Report
 
 The project uses Jest with built-in code coverage tracking (`--coverage`). This helps visualize which parts of the backend codebase are fully tested and where improvements are needed.
 
-### 🔎 Key Coverage Stats
+### 🔎 Test Coverage Report
+
+Current coverage statistics (via Jest’s built-in reporting):
 
 | Metric       | Value     |
 |--------------|-----------|
@@ -498,20 +536,20 @@ Add the documentation scripts:
 
 ## 📄 License
 
-This project is licensed under the **MIT License**. Feel free to use, modify, and distribute with proper attribution.
+This project is licensed under the **MIT License**. You are free to use, modify, and distribute the code with attribution.
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your branch (`git checkout -b feature/xyz`)
-3. Commit your changes (`git commit -am 'Add xyz'`)
-4. Push to the branch (`git push origin feature/xyz`)
-5. Open a Pull Request
+1. Fork the repository.
+2. Create a new branch: `git checkout -b feature/your-feature`.
+3. Commit your changes: `git commit -m "Add feature ..."`
+4. Push to your fork: `git push origin feature/your-feature`.
+5. Open a Pull Request for review.
 
-Issues and suggestions are welcome via GitHub.
+Please follow consistent coding style, include tests for new features, and update documentation as needed. Report issues via the GitHub issue tracker.
 
 ---
 
-© 2025 Feras Ebraheem — All rights reserved.
+© 2025 Feras Alshaekh Ebraheem — All rights reserved.
