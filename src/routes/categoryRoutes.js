@@ -1,12 +1,28 @@
-import express from 'express'
-import { getConnection } from '../db/db.js'
+// ===========================
+// src/routes/categoryRoutes.js
+// ===========================
+
+// ==============================
+// Imports
+// ==============================
+
+import express from 'express' // Importiere express framework
+import { getConnection } from '../db/db.js' // Hole DB-Verbindungsfunktion
 
 /**
  * @module routes/categoryRoutes
  * @description Routes for handling recipe categories.
  */
 
-const router = express.Router()
+// ==============================
+// Router Setup
+// ==============================
+
+const router = express.Router() // Erstelle neuen Express Router
+
+// ==============================
+// Route: GET /categories
+// ==============================
 
 /**
  * Get all recipe categories.
@@ -29,16 +45,20 @@ const router = express.Router()
  */
 router.get('/categories', async (_req, res) => {
   try {
-    const connection = await getConnection()
+    const connection = await getConnection() // DB-Verbindung öffnen
     const [rows] = await connection.execute(
-      'SELECT id, name FROM category ORDER BY name'
+      'SELECT id, name FROM category ORDER BY name' // Kategorien sortiert abrufen
     )
-    await connection.end()
-    res.json({ categories: rows })
+    await connection.end() // Verbindung schließen
+    res.json({ categories: rows }) // Antwort mit Kategorien zurückgeben
   } catch (err) {
-    console.error('❌ Fehler beim Abrufen der Kategorien:', err.message)
-    res.status(500).json({ error: 'Interner Serverfehler.' })
+    console.error('❌ Fehler beim Abrufen der Kategorien:', err.message) // Fehler loggen
+    res.status(500).json({ error: 'Interner Serverfehler.' }) // Fehlerantwort senden
   }
 })
 
-export default router
+// ==============================
+// Export Router
+// ==============================
+
+export default router // Exportiere Router für Verwendung in app.js

@@ -1,14 +1,30 @@
+// ===========================
+// intranet-kochbuch-backend/server.js
+// ===========================
+
 /**
  * @file server.js
  * @description Entry point of the Intranet Kochbuch backend application.
  * Loads environment variables, starts the Express server, and listens on the specified port.
  */
 
+// ===========================
+// Imports
+// ===========================
+
 import app from './app.js'
 import dotenv from 'dotenv'
 
+// ===========================
+// Environment Configuration
+// ===========================
+
 // Load environment variables from .env file
 dotenv.config()
+
+// ===========================
+// Server Setup
+// ===========================
 
 // Define the port the server should listen on
 const PORT = process.env.PORT || 5000

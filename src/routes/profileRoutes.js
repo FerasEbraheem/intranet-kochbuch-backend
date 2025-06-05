@@ -1,13 +1,29 @@
-import express from 'express'
-import { getConnection } from '../db/db.js'
-import auth from '../middleware/auth.js'
+// ===========================
+// src/routes/profileRoutes.js
+// ===========================
+
+// ==============================
+// Imports
+// ==============================
+
+import express from 'express' // Importiere Express für Router
+import { getConnection } from '../db/db.js' // Importiere DB-Verbindungsfunktion
+import auth from '../middleware/auth.js' // Importiere Authentifizierungsmiddleware
 
 /**
  * @module routes/profileRoutes
  * @description Routes for viewing and updating the authenticated user's profile.
  */
 
-const router = express.Router()
+// ==============================
+// Router Setup
+// ==============================
+
+const router = express.Router() // Initialisiere Express-Router
+
+// ==============================
+// Route: GET /profile (Fetch user profile)
+// ==============================
 
 /**
  * Get the authenticated user's profile.
@@ -35,26 +51,30 @@ const router = express.Router()
  * }
  */
 router.get('/profile', auth, async (req, res) => {
-  const userId = req.user.id
+  const userId = req.user.id // Hole User-ID aus Auth-Middleware
 
   try {
-    const connection = await getConnection()
+    const connection = await getConnection() // DB-Verbindung öffnen
     const [rows] = await connection.execute(
-      'SELECT id, email, display_name, avatar_url FROM user WHERE id = ?',
+      'SELECT id, email, display_name, avatar_url FROM user WHERE id = ?', // Benutzerprofil abfragen
       [userId]
     )
-    await connection.end()
+    await connection.end() // DB-Verbindung schließen
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Benutzer nicht gefunden.' })
+      return res.status(404).json({ error: 'Benutzer nicht gefunden.' }) // Kein Benutzer gefunden
     }
 
-    res.status(200).json({ user: rows[0] })
+    res.status(200).json({ user: rows[0] }) // Erfolgreiche Rückgabe des Profils
   } catch (err) {
-    console.error('❌ Fehler beim Laden des Profils:', err.message)
-    res.status(500).json({ error: 'Interner Serverfehler.' })
+    console.error('❌ Fehler beim Laden des Profils:', err.message) // Fehlerprotokoll
+    res.status(500).json({ error: 'Interner Serverfehler.' }) // Serverfehler melden
   }
 })
+
+// ==============================
+// Route: PUT /profile (Update profile)
+// ==============================
 
 /**
  * Update the authenticated user's profile.
@@ -79,21 +99,25 @@ router.get('/profile', auth, async (req, res) => {
  * }
  */
 router.put('/profile', auth, async (req, res) => {
-  const userId = req.user.id
-  const { display_name, avatar_url } = req.body
+  const userId = req.user.id // Authentifizierter Benutzer
+  const { display_name, avatar_url } = req.body // Neue Profildaten auslesen
 
   try {
-    const connection = await getConnection()
+    const connection = await getConnection() // DB-Verbindung öffnen
     await connection.execute(
-      'UPDATE user SET display_name = ?, avatar_url = ? WHERE id = ?',
-      [display_name, avatar_url || null, userId]
+      'UPDATE user SET display_name = ?, avatar_url = ? WHERE id = ?', // Profil aktualisieren
+      [display_name, avatar_url || null, userId] // Null verwenden, wenn kein avatar_url vorhanden
     )
-    await connection.end()
-    res.status(200).json({ message: 'Profil aktualisiert.' })
+    await connection.end() // Verbindung schließen
+    res.status(200).json({ message: 'Profil aktualisiert.' }) // Erfolgsmeldung senden
   } catch (err) {
-    console.error('❌ Fehler beim Aktualisieren des Profils:', err.message)
-    res.status(500).json({ error: 'Interner Serverfehler.' })
+    console.error('❌ Fehler beim Aktualisieren des Profils:', err.message) // Fehler ausgeben
+    res.status(500).json({ error: 'Interner Serverfehler.' }) // Fehlerantwort
   }
 })
 
-export default router
+// ==============================
+// Export Router
+// ==============================
+
+export default router // Router exportieren

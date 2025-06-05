@@ -1,3 +1,11 @@
+// ===========================
+// src/routes/authRoutes.js
+// ===========================
+
+// ==============================
+// Imports
+// ==============================
+
 import express from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
@@ -6,6 +14,10 @@ import auth from '../middleware/auth.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
+// ==============================
+// Constants
+// ==============================
+
 /**
  * @module routes/authRoutes
  * @description Auth routes for user registration, login, and protected route.
@@ -13,6 +25,10 @@ dotenv.config()
 
 const router = express.Router()
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey'
+
+// ==============================
+// Route: POST /register
+// ==============================
 
 /**
  * Register a new user.
@@ -82,6 +98,10 @@ router.post('/register', async (req, res) => {
   }
 })
 
+// ==============================
+// Route: POST /login
+// ==============================
+
 /**
  * Log in a registered user.
  *
@@ -145,6 +165,10 @@ router.post('/login', async (req, res) => {
   }
 })
 
+// ==============================
+// Route: GET /protected
+// ==============================
+
 /**
  * A protected route that requires authentication.
  *
@@ -162,5 +186,9 @@ router.post('/login', async (req, res) => {
 router.get('/protected', auth, (req, res) => {
   res.json({ message: 'Erfolgreich authentifiziert!', user: req.user })
 })
+
+// ==============================
+// Export Router
+// ==============================
 
 export default router

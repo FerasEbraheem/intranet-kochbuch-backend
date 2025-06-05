@@ -1,8 +1,16 @@
+// ===========================
+// src/__tests__/app.test.js
+// ===========================
+
 /**
  * @file __tests__/app.test.js
  * @description Integration tests for the Express application (`app.js`).
  * Covers the root route, public endpoints, and database initialization behavior.
  */
+
+// ===========================
+// Imports & Mocks
+// ===========================
 
 import { jest } from '@jest/globals'
 import request from 'supertest'
@@ -13,9 +21,17 @@ jest.unstable_mockModule('../db/init.js', () => ({
   initDatabase: initMock
 }))
 
+// ===========================
+// Application Setup
+// ===========================
+
 // Dynamic import of the app after mocks are applied
 const appModule = await import('../../app.js')
 const app = appModule.default
+
+// ===========================
+// Test Suite
+// ===========================
 
 /**
  * Main test suite for application-level routes and startup logic.

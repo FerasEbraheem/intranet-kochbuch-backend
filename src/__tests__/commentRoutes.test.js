@@ -1,7 +1,15 @@
+// ===========================
+// src/__tests__/commentRoutes.test.js
+// ===========================
+
 /**
  * @file __tests__/commentRoutes.test.js
  * @description Tests for the `/comments` route: adding, retrieving, and deleting recipe comments.
  */
+
+// ===========================
+// Imports & Mocks
+// ===========================
 
 import { jest } from '@jest/globals'
 import request from 'supertest'
@@ -29,18 +37,21 @@ jest.unstable_mockModule('../middleware/auth.js', () => ({
   default: fakeAuth
 }))
 
-// Load routes after mocking
+// ===========================
+// Setup Express App
+// ===========================
+
 const commentRoutesModule = await import('../routes/commentRoutes.js')
 const commentRoutes = commentRoutesModule.default
 
-// Setup test app
 const app = express()
 app.use(express.json())
 app.use(commentRoutes)
 
-/**
- * Tests for POST /comments/:recipeId
- */
+// ===========================
+// Test Suite: POST /comments/:recipeId
+// ===========================
+
 describe('POST /comments/:recipeId', () => {
   beforeEach(() => jest.clearAllMocks())
 
@@ -71,9 +82,10 @@ describe('POST /comments/:recipeId', () => {
   })
 })
 
-/**
- * Tests for GET /comments/:recipeId
- */
+// ===========================
+// Test Suite: GET /comments/:recipeId
+// ===========================
+
 describe('GET /comments/:recipeId', () => {
   /**
    * Should return a list of comments with status 200
@@ -102,9 +114,10 @@ describe('GET /comments/:recipeId', () => {
   })
 })
 
-/**
- * Tests for DELETE /comments/:commentId
- */
+// ===========================
+// Test Suite: DELETE /comments/:commentId
+// ===========================
+
 describe('DELETE /comments/:commentId', () => {
   /**
    * Should delete comment and return 200 if found and authorized

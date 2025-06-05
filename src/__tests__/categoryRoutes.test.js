@@ -1,8 +1,16 @@
+// ===========================
+// src/__tests__/categoryRoutes.test.js
+// ===========================
+
 /**
  * @file __tests__/categoryRoutes.test.js
  * @description Tests for the `/categories` route.
  * Verifies correct response and database error handling.
  */
+
+// ===========================
+// Imports & Mocks
+// ===========================
 
 import { jest } from '@jest/globals'
 import request from 'supertest'
@@ -20,17 +28,20 @@ jest.unstable_mockModule('../db/db.js', () => ({
   getConnection: mockGetConnection
 }))
 
-// Load category route after mocking DB
+// ===========================
+// Setup Express App
+// ===========================
+
 const categoryRoutesModule = await import('../routes/categoryRoutes.js')
 const categoryRoutes = categoryRoutesModule.default
 
-// Setup Express test app
 const app = express()
 app.use(categoryRoutes)
 
-/**
- * Test suite for GET /categories endpoint.
- */
+// ===========================
+// Test Suite: GET /categories
+// ===========================
+
 describe('GET /categories', () => {
   beforeEach(() => {
     jest.clearAllMocks()

@@ -1,7 +1,15 @@
+// ===========================
+// src/__tests__/favoriteRoutes.test.js
+// ===========================
+
 /**
  * @file __tests__/favoriteRoutes.test.js
  * @description Unit tests for the /favorites API routes including add, fetch, and delete operations.
  */
+
+// ===========================
+// Imports & Mocks
+// ===========================
 
 import { jest } from '@jest/globals'
 import request from 'supertest'
@@ -30,26 +38,29 @@ jest.unstable_mockModule('../middleware/auth.js', () => ({
   default: fakeAuth
 }))
 
-// Load the favorite routes module after mocking
+// ===========================
+// Setup Express App
+// ===========================
+
 const favoriteRoutesModule = await import('../routes/favoriteRoutes.js')
 const favoriteRoutes = favoriteRoutesModule.default
 
-// Setup Express app for testing
 const app = express()
 app.use(express.json())
 app.use(favoriteRoutes)
 
-/**
- * Tests for /favorites route group
- */
+// ===========================
+// Test Suite: Favorite Routes
+// ===========================
+
 describe('Favorite Routes', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  /**
-   * Tests for POST /favorites/:recipeId
-   */
+  // ===========================
+  // POST /favorites/:recipeId
+  // ===========================
   describe('POST /favorites/:recipeId', () => {
     test('should add recipe to favorites', async () => {
       mockExecute.mockResolvedValueOnce()
@@ -68,9 +79,9 @@ describe('Favorite Routes', () => {
     })
   })
 
-  /**
-   * Tests for GET /favorites
-   */
+  // ===========================
+  // GET /favorites
+  // ===========================
   describe('GET /favorites', () => {
     test('should return favorite recipes', async () => {
       const fakeRecipes = [[{
@@ -98,9 +109,9 @@ describe('Favorite Routes', () => {
     })
   })
 
-  /**
-   * Tests for DELETE /favorites/:recipeId
-   */
+  // ===========================
+  // DELETE /favorites/:recipeId
+  // ===========================
   describe('DELETE /favorites/:recipeId', () => {
     test('should remove recipe from favorites', async () => {
       mockExecute.mockResolvedValueOnce([{ affectedRows: 1 }])

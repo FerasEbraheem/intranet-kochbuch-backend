@@ -1,13 +1,29 @@
-import express from 'express'
-import { getConnection } from '../db/db.js'
-import auth from '../middleware/auth.js'
+// ===========================
+// src/routes/commentRoutes.js
+// ===========================
+
+// ==============================
+// Imports
+// ==============================
+
+import express from 'express' // Express framework für Routing importieren
+import { getConnection } from '../db/db.js' // Funktion zur DB-Verbindung importieren
+import auth from '../middleware/auth.js' // Authentifizierungsmiddleware importieren
 
 /**
  * @module routes/commentRoutes
  * @description Routes for handling recipe comments.
  */
 
-const router = express.Router()
+// ==============================
+// Router Setup
+// ==============================
+
+const router = express.Router() // Neuen Express Router erstellen
+
+// ==============================
+// Route: POST /comments/:recipeId (Add comment)
+// ==============================
 
 /**
  * Add a comment to a recipe.
@@ -26,27 +42,31 @@ const router = express.Router()
  * }
  */
 router.post('/comments/:recipeId', auth, async (req, res) => {
-  const recipeId = req.params.recipeId
-  const userId = req.user.id
-  const { text } = req.body
+  const recipeId = req.params.recipeId // Rezept-ID aus URL
+  const userId = req.user.id // Benutzer-ID aus authentifiziertem Token
+  const { text } = req.body // Kommentartext aus Anfrage extrahieren
 
   if (!text || text.trim() === '') {
-    return res.status(400).json({ error: 'Kommentar darf nicht leer sein.' })
+    return res.status(400).json({ error: 'Kommentar darf nicht leer sein.' }) // Validierung: Kommentar darf nicht leer sein
   }
 
   try {
-    const connection = await getConnection()
+    const connection = await getConnection() // Verbindung zur DB öffnen
     await connection.execute(
-      'INSERT INTO comment (recipe_id, user_id, content) VALUES (?, ?, ?)',
-      [recipeId, userId, text]
+      'INSERT INTO comment (recipe_id, user_id, content) VALUES (?, ?, ?)', // SQL-Befehl zum Speichern des Kommentars
+      [recipeId, userId, text] // Platzhalterwerte einsetzen
     )
-    await connection.end()
-    res.status(201).json({ message: 'Kommentar gespeichert.' })
+    await connection.end() // DB-Verbindung schließen
+    res.status(201).json({ message: 'Kommentar gespeichert.' }) // Erfolgreiche Antwort senden
   } catch (err) {
-    console.error('❌ Fehler beim Speichern des Kommentars:', err.message)
-    res.status(500).json({ error: 'Interner Serverfehler.' })
+    console.error('❌ Fehler beim Speichern des Kommentars:', err.message) // Fehler protokollieren
+    res.status(500).json({ error: 'Interner Serverfehler.' }) // Fehlerantwort senden
   }
 })
+
+// ==============================
+// Route: GET /comments/:recipeId (Fetch comments)
+// ==============================
 
 /**
  * Get all comments for a recipe.
@@ -73,24 +93,28 @@ router.post('/comments/:recipeId', auth, async (req, res) => {
  * }
  */
 router.get('/comments/:recipeId', async (req, res) => {
-  const recipeId = req.params.recipeId
+  const recipeId = req.params.recipeId // Rezept-ID aus URL holen
 
   try {
-    const connection = await getConnection()
+    const connection = await getConnection() // DB-Verbindung herstellen
     const [comments] = await connection.execute(`
       SELECT c.id, c.user_id, c.content AS text, u.display_name, u.email
       FROM comment c
       JOIN user u ON c.user_id = u.id
       WHERE c.recipe_id = ?
       ORDER BY c.created_at ASC
-    `, [recipeId])
-    await connection.end()
-    res.status(200).json({ comments })
+    `, [recipeId]) // Kommentare mit Benutzerdaten abfragen
+    await connection.end() // Verbindung schließen
+    res.status(200).json({ comments }) // Erfolgreiche Antwort mit Kommentaren senden
   } catch (err) {
-    console.error('❌ Fehler beim Laden der Kommentare:', err.message)
-    res.status(500).json({ error: 'Interner Serverfehler.' })
+    console.error('❌ Fehler beim Laden der Kommentare:', err.message) // Fehlerprotokoll
+    res.status(500).json({ error: 'Interner Serverfehler.' }) // Fehlerantwort senden
   }
 })
+
+// ==============================
+// Route: DELETE /comments/:commentId (Delete comment)
+// ==============================
 
 /**
  * Delete a user's own comment.
@@ -103,26 +127,30 @@ router.get('/comments/:recipeId', async (req, res) => {
  * @returns {void}
  */
 router.delete('/comments/:commentId', auth, async (req, res) => {
-  const commentId = req.params.commentId
-  const userId = req.user.id
+  const commentId = req.params.commentId // Kommentar-ID aus URL
+  const userId = req.user.id // Authentifizierter Benutzer
 
   try {
-    const connection = await getConnection()
+    const connection = await getConnection() // DB-Verbindung aufbauen
     const [result] = await connection.execute(
-      'DELETE FROM comment WHERE id = ? AND user_id = ?',
+      'DELETE FROM comment WHERE id = ? AND user_id = ?', // Nur eigenen Kommentar löschen
       [commentId, userId]
     )
-    await connection.end()
+    await connection.end() // Verbindung schließen
 
     if (result.affectedRows === 0) {
-      return res.status(403).json({ error: 'Keine Berechtigung zum Löschen dieses Kommentars.' })
+      return res.status(403).json({ error: 'Keine Berechtigung zum Löschen dieses Kommentars.' }) // Falls Kommentar nicht dem User gehört
     }
 
-    res.status(200).json({ message: 'Kommentar gelöscht.' })
+    res.status(200).json({ message: 'Kommentar gelöscht.' }) // Erfolgreich gelöscht
   } catch (err) {
-    console.error('❌ Fehler beim Löschen des Kommentars:', err.message)
-    res.status(500).json({ error: 'Interner Serverfehler.' })
+    console.error('❌ Fehler beim Löschen des Kommentars:', err.message) // Fehlerausgabe
+    res.status(500).json({ error: 'Interner Serverfehler.' }) // Fehlerantwort
   }
 })
 
-export default router
+// ==============================
+// Export Router
+// ==============================
+
+export default router // Exportiere Router für die Verwendung in app.js

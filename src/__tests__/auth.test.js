@@ -1,8 +1,16 @@
+// ===========================
+// src/__tests__/auth.test.js
+// ===========================
+
 /**
  * @file __tests__/auth.test.js
  * @description Unit tests for the JWT authentication middleware (`middleware/auth.js`).
  * Covers validation of Authorization header and token verification behavior.
  */
+
+// ===========================
+// Imports & Mocks
+// ===========================
 
 import { jest } from '@jest/globals'
 
@@ -12,9 +20,17 @@ jest.unstable_mockModule('jsonwebtoken', () => ({
   default: { verify: fakeVerify }
 }))
 
+// ===========================
+// Middleware Setup
+// ===========================
+
 // Import the middleware after mocking
 const authModule = await import('../middleware/auth.js')
 const auth = authModule.default
+
+// ===========================
+// Test Suite
+// ===========================
 
 /**
  * Test suite for JWT middleware behavior.

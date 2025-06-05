@@ -1,8 +1,16 @@
+// ===========================
+// src/__tests__/profileRoutes.test.js
+// ===========================
+
+
 /**
  * @file __tests__/profileRoutes.test.js
  * @description Tests for user profile routes: GET and PUT /profile
  */
 
+// ===========================
+// Imports & Mocks
+// ===========================
 import { jest } from '@jest/globals'
 import request from 'supertest'
 import express from 'express'
@@ -30,7 +38,9 @@ jest.unstable_mockModule('../db/db.js', () => ({
 jest.unstable_mockModule('../middleware/auth.js', () => ({
   default: fakeAuth
 }))
-
+// ===========================
+// Test App Setup
+// ===========================
 // Import routes after mocking
 const profileRoutesModule = await import('../routes/profileRoutes.js')
 const profileRoutes = profileRoutesModule.default
@@ -40,6 +50,9 @@ const app = express()
 app.use(express.json())
 app.use(profileRoutes)
 
+// ===========================
+// Test Suites
+// ===========================
 /**
  * Tests for GET /profile
  */

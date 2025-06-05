@@ -1,35 +1,55 @@
+// ===========================
+// src/routes/uploadRoutes.js
+// ===========================
+
 /**
  * @module routes/uploadRoutes
  * @description Route for handling image uploads using multer.
  */
 
-import express from 'express'
-import multer from 'multer'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import fs from 'fs'
+// ===========================
+// Imports and Setup
+// ===========================
 
-const router = express.Router()
+import express from 'express' // Import express for routing
+import multer from 'multer' // Import multer for file uploads
+import path from 'path' // Import path for directory paths
+import { fileURLToPath } from 'url' // To get __dirname in ES modules
+import fs from 'fs' // File system module for directory operations
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const uploadDir = path.join(__dirname, '../../uploads')
+const router = express.Router() // Create router instance
+
+const __filename = fileURLToPath(import.meta.url) // Get current filename
+const __dirname = path.dirname(__filename) // Get current directory name
+const uploadDir = path.join(__dirname, '../../uploads') // Define upload directory path
+
+// ===========================
+// Directory Initialization
+// ===========================
 
 // Create upload directory if it doesn't exist
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir)
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir) // Check and create uploads folder
+
+// ===========================
+// Multer Configuration
+// ===========================
 
 /**
  * Multer storage configuration for saving uploaded images with unique filenames.
  */
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
+  destination: (_req, _file, cb) => cb(null, uploadDir), // Set destination folder
   filename: (_req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname
-    cb(null, uniqueName)
+    const uniqueName = Date.now() + '-' + file.originalname // Generate unique filename with timestamp
+    cb(null, uniqueName) // Callback with filename
   }
 })
 
-const upload = multer({ storage })
+const upload = multer({ storage }) // Initialize multer with storage config
+
+// ===========================
+// Routes
+// ===========================
 
 /**
  * Upload a single image.
@@ -52,8 +72,12 @@ const upload = multer({ storage })
  * }
  */
 router.post('/upload-image', upload.single('image'), (req, res) => {
-  const imageUrl = `${req.protocol}://${req.hostname}:5000/uploads/${req.file.filename}`
-  res.json({ imageUrl })
+  const imageUrl = `${req.protocol}://${req.hostname}:5000/uploads/${req.file.filename}` // Construct image URL
+  res.json({ imageUrl }) // Respond with image URL
 })
 
-export default router
+// ===========================
+// Export
+// ===========================
+
+export default router // Export the router

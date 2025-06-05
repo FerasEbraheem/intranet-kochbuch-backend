@@ -1,8 +1,16 @@
+// ===========================
+// src/__tests__/authRoutes.test.js
+// ===========================
+
 /**
  * @file __tests__/authRoutes.test.js
  * @description Integration tests for user registration and login via /register and /login routes.
  * Mocks database, bcrypt, and JWT functionality to isolate route behavior.
  */
+
+// ===========================
+// Imports & Mocks
+// ===========================
 
 import { jest } from '@jest/globals'
 import request from 'supertest'
@@ -35,14 +43,20 @@ jest.unstable_mockModule('jsonwebtoken', () => ({
   }
 }))
 
-// Import auth routes after mocks
+// ===========================
+// Setup App with Routes
+// ===========================
+
 const authRoutesModule = await import('../routes/authRoutes.js')
 const authRoutes = authRoutesModule.default
 
-// Setup app instance
 const app = express()
 app.use(express.json())
 app.use(authRoutes)
+
+// ===========================
+// Test Suite
+// ===========================
 
 /**
  * Test suite for authentication routes (/register, /login).
@@ -52,9 +66,10 @@ describe('Auth Routes', () => {
     jest.clearAllMocks()
   })
 
-  /**
-   * Tests for POST /register
-   */
+  // ===========================
+  // Register Route Tests
+  // ===========================
+
   describe('POST /register', () => {
     /**
      * Should register a new user and return a token
@@ -91,9 +106,10 @@ describe('Auth Routes', () => {
     })
   })
 
-  /**
-   * Tests for POST /login
-   */
+  // ===========================
+  // Login Route Tests
+  // ===========================
+
   describe('POST /login', () => {
     /**
      * Should allow login with correct credentials

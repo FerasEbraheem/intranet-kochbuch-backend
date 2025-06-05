@@ -1,8 +1,20 @@
-import { getConnection } from './db.js'
+// ===========================
+// src/db/init.js
+// ===========================
 
 /**
+ * @file init.js
+ * @description Initializes the MySQL database with required schema and relationships.
+ * Creates tables if they do not exist already.
+ *
  * @module db/init
  */
+
+import { getConnection } from './db.js'
+
+// ==============================
+// Main Initialization Function
+// ==============================
 
 /**
  * Initializes the database by creating necessary tables if they don't exist.
@@ -26,7 +38,7 @@ import { getConnection } from './db.js'
  *
  * @async
  * @function
- * @returns {Promise<Object>} Resolves when initialization is complete
+ * @returns {Promise<void>} Resolves when initialization is complete
  *
  * @example
  * import { initDatabase } from './db/init.js';
@@ -36,6 +48,9 @@ export async function initDatabase() {
   try {
     const connection = await getConnection()
 
+    // ==============================
+    // User Table
+    // ==============================
     await connection.execute(`CREATE TABLE IF NOT EXISTS user (
       id INT AUTO_INCREMENT PRIMARY KEY,
       email VARCHAR(255) NOT NULL UNIQUE,
@@ -45,6 +60,9 @@ export async function initDatabase() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`)
 
+    // ==============================
+    // Recipe Table
+    // ==============================
     await connection.execute(`CREATE TABLE IF NOT EXISTS recipe (
       id INT AUTO_INCREMENT PRIMARY KEY,
       user_id INT NOT NULL,
@@ -57,11 +75,17 @@ export async function initDatabase() {
       FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
     )`)
 
+    // ==============================
+    // Category Table
+    // ==============================
     await connection.execute(`CREATE TABLE IF NOT EXISTS category (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(100) NOT NULL UNIQUE
     )`)
 
+    // ==============================
+    // Recipe-Category Junction Table
+    // ==============================
     await connection.execute(`CREATE TABLE IF NOT EXISTS recipe_category (
       recipe_id INT NOT NULL,
       category_id INT NOT NULL,
@@ -70,6 +94,9 @@ export async function initDatabase() {
       FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE CASCADE
     )`)
 
+    // ==============================
+    // Favorites Table
+    // ==============================
     await connection.execute(`CREATE TABLE IF NOT EXISTS favorite (
       user_id INT NOT NULL,
       recipe_id INT NOT NULL,
@@ -78,6 +105,9 @@ export async function initDatabase() {
       FOREIGN KEY (recipe_id) REFERENCES recipe(id) ON DELETE CASCADE
     )`)
 
+    // ==============================
+    // Comments Table
+    // ==============================
     await connection.execute(`CREATE TABLE IF NOT EXISTS comment (
       id INT AUTO_INCREMENT PRIMARY KEY,
       recipe_id INT NOT NULL,

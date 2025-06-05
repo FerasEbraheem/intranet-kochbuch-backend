@@ -1,8 +1,15 @@
+// ===========================
+// src/__tests__/init.test.js
+// ===========================
+
 /**
  * @file __tests__/init.test.js
  * @description Unit tests for the database initialization function `initDatabase`.
  */
 
+// ===========================
+// Imports & Mocks
+// ===========================
 import { jest } from '@jest/globals'
 
 // Mock database connection
@@ -21,6 +28,10 @@ jest.unstable_mockModule('../db/db.js', () => ({
 // Import initDatabase after mocking
 const { initDatabase } = await import('../db/init.js')
 
+
+// ===========================
+// Test Suite
+// ===========================
 /**
  * Test suite for initDatabase()
  */
